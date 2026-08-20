@@ -86,14 +86,14 @@ export default function VesselsPage() {
           className="mt-3 w-full resize-y rounded-md border border-border bg-surface-2 p-3 font-mono text-xs leading-relaxed text-foreground outline-none focus:border-accent"
         />
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] text-muted">
             {rawText.trim() ? `${rawText.trim().length.toLocaleString()}자` : "텍스트를 입력하거나 샘플을 불러오세요."}
           </p>
           <button
             onClick={handleExtract}
             disabled={!rawText.trim() || status === "processing"}
-            className="flex items-center gap-1.5 rounded-md bg-accent px-4 py-1.5 text-xs font-semibold text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md bg-accent px-4 py-1.5 text-xs font-semibold text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {status === "processing" ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
             추출 시작

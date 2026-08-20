@@ -109,7 +109,7 @@ export function TceCalculator() {
           <div className="space-y-5">
             <Slider label="운임" unit="$/ton" min={10} max={60} step={0.5} value={inputs.freightRate} onChange={(v) => set("freightRate", v)} />
             <Slider label="벙커유 가격" unit="$/ton" min={300} max={1000} step={5} value={inputs.bunkerPricePerTon} onChange={(v) => set("bunkerPricePerTon", v)} />
-            <Slider label="대기일수" unit="days" min={0} max={15} step={0.5} value={inputs.waitingDays} onChange={(v) => set("waitingDays", v)} />
+            <Slider label="대기일수" unit="일" min={0} max={15} step={0.5} value={inputs.waitingDays} onChange={(v) => set("waitingDays", v)} />
             <Slider label="커미션" unit="%" min={0} max={6.25} step={0.25} value={inputs.commissionPct} onChange={(v) => set("commissionPct", v)} />
             <Slider label="속력" unit="knots" min={9} max={18} step={0.1} value={inputs.speedKnots} onChange={(v) => set("speedKnots", v)} />
           </div>

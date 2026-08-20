@@ -41,29 +41,62 @@ export const TIER_LABEL_KO: Record<OpportunityTier, string> = {
   "VERY HIGH": "매우 높음",
 };
 
-function dominantFactorLabel(o: Opportunity): string {
+// 요인이 점수를 끌어올리는 방향으로 작용할 때 쓰는 라벨(값이 높을수록 해당됨)
+const DRIVING_LABELS: Record<keyof ScoreFactorsKeys, string> = {
+  fleetAge: "노후화된 선대",
+  orderbookGap: "넓은 발주잔량 커버리지 격차",
+  fleetSize: "큰 선대 규모",
+  fleetGrowth: "빠른 선대 성장 추세",
+  fuelTransition: "활발한 대체연료 전환 태세",
+  marketCondition: "우호적인 시장 상황",
+};
+
+// 요인이 점수 상승을 제한하는 방향으로 작용할 때 쓰는 라벨(값이 낮을수록 해당됨)
+const LIMITING_LABELS: Record<keyof ScoreFactorsKeys, string> = {
+  fleetAge: "비교적 젊은 선대 구성",
+  orderbookGap: "이미 확보된 발주잔량 커버리지",
+  fleetSize: "제한적인 선대 규모",
+  fleetGrowth: "정체된 선대 성장세",
+  fuelTransition: "초기 단계에 머문 대체연료 전환",
+  marketCondition: "우호적이지 않은 시장 상황",
+};
+
+type ScoreFactorsKeys = Opportunity["factors"];
+
+// 요인은 가중치가 서로 다르므로, 원값이 아니라 "가중치 × 값" 기준으로 비교해야
+// 실제로 점수에 가장 크게 기여(또는 제약)한 요인을 올바르게 찾을 수 있습니다.
+function dominantFactorLabel(o: Opportunity, tier: OpportunityTier): string {
   const f = o.factors;
-  const entries: [string, number][] = [
-    ["노후화된 선대", f.fleetAge],
-    ["넓은 발주잔량 커버리지 격차", f.orderbookGap],
-    ["선대 규모", f.fleetSize],
-    ["선대 성장 추세", f.fleetGrowth],
-    ["대체연료 전환 태세", f.fuelTransition],
-    ["현재 시장 상황", f.marketCondition],
+  const weighted: [keyof ScoreFactorsKeys, number][] = [
+    ["fleetAge", f.fleetAge * SCORE_WEIGHTS.fleetAge],
+    ["orderbookGap", f.orderbookGap * SCORE_WEIGHTS.orderbookGap],
+    ["fleetSize", f.fleetSize * SCORE_WEIGHTS.fleetSize],
+    ["fleetGrowth", f.fleetGrowth * SCORE_WEIGHTS.fleetGrowth],
+    ["fuelTransition", f.fuelTransition * SCORE_WEIGHTS.fuelTransition],
+    ["marketCondition", f.marketCondition * SCORE_WEIGHTS.marketCondition],
   ];
-  entries.sort((a, b) => b[1] - a[1]);
-  return entries[0][0];
+
+  const rising = tier === "HIGH" || tier === "VERY HIGH";
+  weighted.sort((a, b) => (rising ? b[1] - a[1] : a[1] - b[1]));
+  const key = weighted[0][0];
+  return rising ? DRIVING_LABELS[key] : LIMITING_LABELS[key];
 }
 
 // 결정론적 템플릿 — 데모/폴백 모드에서 LLM 설명을 대신합니다.
 // 구조는 실제 AIProvider.generateCommercialInsight 호출이 반환할 형태를 그대로 모사합니다.
 export function explainScore(o: Opportunity, score: number, tier: OpportunityTier): string {
-  const dominant = dominantFactorLabel(o);
-  return `${o.customer}은(는) ${score}/100점(${TIER_LABEL_KO[tier]})으로, 주로 ${dominant} 요인에 의해 견인되고 있습니다. 평균 선령 ${o.averageFleetAge.toFixed(
+  const dominant = dominantFactorLabel(o, tier);
+  const rising = tier === "HIGH" || tier === "VERY HIGH";
+
+  if (rising) {
+    return `${o.customer}은(는) ${score}/100점(${TIER_LABEL_KO[tier]})으로, 주로 ${dominant} 요인에 의해 견인되고 있습니다. 평균 선령 ${o.averageFleetAge.toFixed(
+      1
+    )}년에 발주잔량은 ${o.orderbook}척에 불과해, 선대 교체 시그널이 뚜렷하게 나타나고 있는 것으로 판단됩니다.`;
+  }
+
+  return `${o.customer}은(는) ${score}/100점(${TIER_LABEL_KO[tier]})으로, ${dominant} 특성이 점수 상승을 제한하고 있습니다. 평균 선령 ${o.averageFleetAge.toFixed(
     1
-  )}년에 발주잔량은 ${o.orderbook}척에 불과해, 선대 교체 시그널이 ${
-    score >= 70 ? "뚜렷하게 나타나고" : "형성되는 단계에 있는 것으로"
-  } 판단됩니다.`;
+  )}년, 발주잔량 ${o.orderbook}척 기준으로 볼 때 선대 교체 시그널은 아직 형성되는 단계로 판단됩니다.`;
 }
 
 export function recommendedAction(tier: OpportunityTier, o: Opportunity): string {

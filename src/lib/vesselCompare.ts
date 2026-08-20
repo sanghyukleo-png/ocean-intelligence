@@ -24,9 +24,9 @@ interface CompareFieldSpec {
 }
 
 const COMPARE_FIELDS: CompareFieldSpec[] = [
-  { key: "dwt", label: "재화중량톤(DWT)", unit: "MT", favorable: "higher" },
-  { key: "grossTonnage", label: "총톤수(GT)", unit: "GT", favorable: "neutral" },
-  { key: "loa", label: "전장(LOA)", unit: "m", favorable: "neutral" },
+  { key: "dwt", label: "재화중량톤", unit: "MT", favorable: "higher" },
+  { key: "grossTonnage", label: "총톤수", unit: "GT", favorable: "neutral" },
+  { key: "loa", label: "전장", unit: "m", favorable: "neutral" },
   { key: "beam", label: "형폭", unit: "m", favorable: "neutral" },
   { key: "draft", label: "흘수", unit: "m", favorable: "neutral" },
   { key: "builtYear", label: "건조연도", unit: "년", favorable: "higher" },

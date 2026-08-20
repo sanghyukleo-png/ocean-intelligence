@@ -22,7 +22,7 @@ export const mockVessels: Vessel[] = [
     owner: "Meridian Bulk Carriers",
     operator: "Meridian Ship Management",
     class: "DNV",
-    flag: "Greece",
+    flag: "그리스",
   },
   {
     id: "v-02",
@@ -43,7 +43,7 @@ export const mockVessels: Vessel[] = [
     owner: "Pacific Rim Shipping",
     operator: "Pacific Rim Shipping",
     class: "ABS",
-    flag: "Singapore",
+    flag: "싱가포르",
   },
   {
     id: "v-03",
@@ -64,7 +64,7 @@ export const mockVessels: Vessel[] = [
     owner: "Northland Tankers AS",
     operator: "Northland Tankers AS",
     class: "DNV",
-    flag: "Norway",
+    flag: "노르웨이",
   },
   {
     id: "v-04",
@@ -85,7 +85,7 @@ export const mockVessels: Vessel[] = [
     owner: "Atlas Ore Logistics",
     operator: "Atlas Ore Logistics",
     class: "KR",
-    flag: "Brazil",
+    flag: "브라질",
   },
   {
     id: "v-05",
@@ -106,7 +106,7 @@ export const mockVessels: Vessel[] = [
     owner: "Hellenic Star Maritime",
     operator: "Hellenic Star Maritime",
     class: "ABS",
-    flag: "Greece",
+    flag: "그리스",
   },
   {
     id: "v-06",
@@ -127,7 +127,7 @@ export const mockVessels: Vessel[] = [
     owner: "BlueWave Gas Carriers",
     operator: "BlueWave Gas Carriers",
     class: "KR",
-    flag: "South Korea",
+    flag: "대한민국",
   },
   {
     id: "v-07",
@@ -148,7 +148,7 @@ export const mockVessels: Vessel[] = [
     owner: "Cape Horn Bulk Co.",
     operator: "Cape Horn Bulk Co.",
     class: "NK",
-    flag: "Chile",
+    flag: "칠레",
   },
   {
     id: "v-08",
@@ -169,7 +169,7 @@ export const mockVessels: Vessel[] = [
     owner: "Orion Maritime Holdings",
     operator: "Orion Maritime Holdings",
     class: "LR",
-    flag: "UAE",
+    flag: "아랍에미리트",
   },
   {
     id: "v-09",
@@ -190,7 +190,7 @@ export const mockVessels: Vessel[] = [
     owner: "Meridian Bulk Carriers",
     operator: "Meridian Ship Management",
     class: "DNV",
-    flag: "Greece",
+    flag: "그리스",
   },
   {
     id: "v-10",
@@ -211,7 +211,7 @@ export const mockVessels: Vessel[] = [
     owner: "Northland Tankers AS",
     operator: "Northland Tankers AS",
     class: "DNV",
-    flag: "Norway",
+    flag: "노르웨이",
   },
 ];
 

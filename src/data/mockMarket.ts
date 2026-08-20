@@ -32,7 +32,7 @@ export const mockMarketIndicators: MarketIndicator[] = [
     changePct: -4.1,
     direction: "down",
     sparkline: [12.8, 12.5, 12.1, 11.8, 11.6, 11.4, 11.2],
-    description: "발주잔량 대비 선대 비율이 여전히 역사적 평균을 밑돌고 있습니다.",
+    description: "선대 대비 발주잔량 비율이 여전히 역사적 평균을 밑돌고 있습니다.",
   },
   {
     id: "newbuilding",
