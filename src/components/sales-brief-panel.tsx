@@ -22,8 +22,8 @@ export function SalesBriefPanel({
   async function handleGenerate() {
     setStatus("loading");
     try {
-      // Simulated processing sequence — in production this step would call
-      // AIProvider.generateSalesBrief(). This demo path is fully deterministic.
+      // 시뮬레이션 처리 시퀀스 — 실제 서비스에서는 이 단계가
+      // AIProvider.generateSalesBrief()를 호출합니다. 이 데모 경로는 전부 결정론적입니다.
       await new Promise((r) => setTimeout(r, 700));
       const result = generateSalesBrief(opportunity, signals);
       setBrief(result);
@@ -36,24 +36,24 @@ export function SalesBriefPanel({
   function handleCopy() {
     if (!brief) return;
     const text = [
-      `SALES BRIEF — ${brief.customer}`,
+      `영업 브리프 — ${brief.customer}`,
       "",
-      "EXECUTIVE SUMMARY",
+      "요약",
       brief.executiveSummary,
       "",
-      "KEY FINDINGS",
+      "핵심 발견",
       ...brief.keyFindings.map((f) => `- ${f}`),
       "",
-      "COMMERCIAL ASSESSMENT",
+      "상업적 평가",
       brief.commercialAssessment,
       "",
-      "CUSTOMER OPPORTUNITY",
+      "고객 기회",
       brief.customerOpportunity,
       "",
-      "RECOMMENDED SALES TALKING POINTS",
+      "추천 영업 토킹포인트",
       ...brief.talkingPoints.map((t) => `- ${t}`),
       "",
-      "RECOMMENDED NEXT ACTION",
+      "추천 다음 액션",
       brief.recommendedNextAction,
     ].join("\n");
     navigator.clipboard.writeText(text);
@@ -66,7 +66,7 @@ export function SalesBriefPanel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles size={15} className="text-accent" />
-          <h3 className="text-sm font-semibold text-foreground">Generate Sales Brief</h3>
+          <h3 className="text-sm font-semibold text-foreground">영업 브리프 생성</h3>
         </div>
         {status === "success" && (
           <button
@@ -74,7 +74,7 @@ export function SalesBriefPanel({
             className="flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-muted hover:bg-surface-2 hover:text-foreground"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? "복사됨" : "복사"}
           </button>
         )}
       </div>
@@ -83,14 +83,14 @@ export function SalesBriefPanel({
         <div className="mt-4 flex flex-col items-center gap-3 rounded-md border border-dashed border-border py-8 text-center">
           <FileText size={20} className="text-muted" />
           <p className="max-w-xs text-xs text-muted">
-            Combine market signals, opportunity score, and commercial assessment into a concise
-            AI sales planning brief.
+            시장 시그널, 영업기회 점수, 상업적 평가를 결합해 간결한 AI 영업기획 브리프를
+            생성합니다.
           </p>
           <button
             onClick={handleGenerate}
             className="rounded-md bg-accent px-4 py-1.5 text-xs font-semibold text-background hover:opacity-90"
           >
-            Generate Brief
+            브리프 생성
           </button>
         </div>
       )}
@@ -98,23 +98,23 @@ export function SalesBriefPanel({
       {status === "loading" && (
         <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
           <Loader2 size={18} className="animate-spin text-accent" />
-          <p className="text-xs text-muted">Synthesizing commercial narrative…</p>
+          <p className="text-xs text-muted">상업적 서사를 종합하는 중…</p>
         </div>
       )}
 
       {status === "success" && brief && (
         <div className="mt-4 space-y-4 text-xs leading-relaxed">
           <span className="inline-block rounded border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-medium tracking-wide text-accent">
-            AI-GENERATED INSIGHT · DEMO
+            AI 생성 인사이트 · 데모
           </span>
 
           <div>
-            <CardLabel>Executive Summary</CardLabel>
+            <CardLabel>요약</CardLabel>
             <p className="mt-1 text-foreground">{brief.executiveSummary}</p>
           </div>
 
           <div>
-            <CardLabel>Key Findings</CardLabel>
+            <CardLabel>핵심 발견</CardLabel>
             <ul className="mt-1 space-y-1">
               {brief.keyFindings.map((f, i) => (
                 <li key={i} className="flex gap-1.5 text-foreground">
@@ -126,17 +126,17 @@ export function SalesBriefPanel({
           </div>
 
           <div>
-            <CardLabel>Commercial Assessment</CardLabel>
+            <CardLabel>상업적 평가</CardLabel>
             <p className="mt-1 text-foreground">{brief.commercialAssessment}</p>
           </div>
 
           <div>
-            <CardLabel>Customer Opportunity</CardLabel>
+            <CardLabel>고객 기회</CardLabel>
             <p className="mt-1 text-foreground">{brief.customerOpportunity}</p>
           </div>
 
           <div>
-            <CardLabel>Recommended Sales Talking Points</CardLabel>
+            <CardLabel>추천 영업 토킹포인트</CardLabel>
             <ul className="mt-1 space-y-1">
               {brief.talkingPoints.map((t, i) => (
                 <li key={i} className="flex gap-1.5 text-foreground">
@@ -148,7 +148,7 @@ export function SalesBriefPanel({
           </div>
 
           <div>
-            <CardLabel>Recommended Next Action</CardLabel>
+            <CardLabel>추천 다음 액션</CardLabel>
             <p className="mt-1 font-medium text-foreground">{brief.recommendedNextAction}</p>
           </div>
         </div>

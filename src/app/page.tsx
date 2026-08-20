@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowUpRight, TrendingUp } from "lucide-react";
 import { mockMarketIndicators, mockMarketSignals } from "@/data/mockMarket";
 import { mockOpportunities } from "@/data/mockOpportunities";
-import { scoreAllOpportunities, TIER_COLOR } from "@/lib/scoring";
+import { scoreAllOpportunities, TIER_COLOR, TIER_LABEL_KO } from "@/lib/scoring";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, IMPORTANCE_LABEL_KO } from "@/lib/utils";
 
 export default function HomePage() {
   const heroIndicators = mockMarketIndicators.slice(0, 4);
@@ -17,28 +17,30 @@ export default function HomePage() {
       {/* Hero */}
       <section className="animate-fade-in-up">
         <p className="text-xs font-medium tracking-[0.16em] text-accent">
-          MARITIME COMMAND DASHBOARD
+          종합 커맨드 대시보드
         </p>
         <h1 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
-          Market signal to sales action — in one workflow.
+          시장 시그널에서 영업 액션까지, 하나의 워크플로우로.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          OCEAN INTELLIGENCE turns fleet, market, and vessel data into ranked commercial
-          opportunities and AI-assisted sales briefs for merchant shipbuilding sales planning.
+          OCEAN INTELLIGENCE는 선대·시황·선박 데이터를 등급화된 영업기회와 AI 지원 영업
+          브리프로 전환해, 조선 영업기획 실무를 데이터 기반으로 시연하는 포트폴리오
+          프로젝트입니다. 아래 지표와 카드는 실제 클릭·조작이 가능한 데모입니다 — 각 모듈로
+          이동해 직접 테스트해보세요.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/opportunities"
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-semibold text-background transition-opacity hover:opacity-90"
           >
-            View Sales Opportunities
+            영업기회 보기
             <ArrowUpRight size={14} />
           </Link>
           <Link
             href="/market"
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-surface"
           >
-            Explore Market Intelligence
+            시황 인텔리전스 살펴보기
           </Link>
         </div>
       </section>
@@ -46,9 +48,9 @@ export default function HomePage() {
       {/* KPI grid */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold tracking-wide text-foreground">Market Indicators</h2>
+          <h2 className="text-sm font-semibold tracking-wide text-foreground">시장 지표</h2>
           <Link href="/market" className="text-xs text-accent hover:underline">
-            Full market view →
+            전체 시황 보기 →
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -61,7 +63,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
         {/* Market signals */}
         <section className="lg:col-span-2">
-          <h2 className="mb-3 text-sm font-semibold tracking-wide text-foreground">Market Signals</h2>
+          <h2 className="mb-3 text-sm font-semibold tracking-wide text-foreground">시장 시그널</h2>
           <div className="space-y-3">
             {topSignals.map((s) => (
               <Card key={s.id} className="animate-fade-in-up">
@@ -78,7 +80,7 @@ export default function HomePage() {
                         : "border-border bg-surface-2 text-muted"
                     )}
                   >
-                    {s.importance}
+                    {IMPORTANCE_LABEL_KO[s.importance]}
                   </span>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted">{s.summary}</p>
@@ -92,10 +94,10 @@ export default function HomePage() {
         <section className="lg:col-span-3">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold tracking-wide text-foreground">
-              Top Sales Opportunities
+              상위 영업기회
             </h2>
             <Link href="/opportunities" className="text-xs text-accent hover:underline">
-              View all →
+              전체 보기 →
             </Link>
           </div>
           <div className="space-y-3">
@@ -116,7 +118,7 @@ export default function HomePage() {
                           TIER_COLOR[o.tier]
                         )}
                       >
-                        {o.tier}
+                        {TIER_LABEL_KO[o.tier]}
                       </span>
                       <span className="font-mono-num text-lg font-semibold text-foreground">
                         {o.score}

@@ -1,25 +1,27 @@
 # OCEAN INTELLIGENCE
 
-AI-powered Maritime Market & Sales Intelligence — a portfolio project demonstrating
-market-intelligence and sales-planning workflows for merchant shipbuilding sales.
+AI-powered Maritime Market & Sales Intelligence — a Korean-language portfolio project
+demonstrating market-intelligence and sales-planning workflows for merchant shipbuilding sales,
+built for a Hanwha Ocean 영업기획(Sales Planning) job application.
 
 **Workflow:** Market Signal → Vessel Intelligence → Commercial Assessment → Sales Opportunity →
 Recommended Action → Sales Brief.
 
-## Status: MVP (Tier 1 complete)
+## Status: full build complete
 
 | Module | Status |
 |---|---|
-| Home — Maritime Command Dashboard | ✅ |
-| Market — Macro Intelligence | ✅ |
-| Opportunities — Sales Opportunity Radar (deterministic scoring engine) | ✅ |
-| Generate Sales Brief | ✅ |
-| Analytics — Voyage Economics / TCE calculator | ✅ |
-| Compare — side-by-side vessel analysis | 🚧 stub |
-| Vessels — AI PDF/Q88 extractor | 🚧 stub |
+| Home — 종합 커맨드 대시보드 | ✅ |
+| Market — 매크로 인텔리전스 | ✅ |
+| Vessels — 정규식 기반 Q88/제원표 추출 엔진 | ✅ |
+| Compare — 선박 2~4척 비교 분석 | ✅ |
+| Opportunities — 영업기회 레이더 (결정론적 스코어링 엔진) | ✅ |
+| 영업 브리프 생성 | ✅ |
+| Analytics — 항해 경제성 / TCE 계산기 | ✅ |
 
 All data is simulated/demo data. Nothing in this app represents live market information or real
-companies.
+companies. UI copy is in Korean; every page opens with a "이 화면이 보여주는 것 / 핵심 작동
+방법" banner explaining what it shows and how it works, so each module can be tried live.
 
 ## Stack
 

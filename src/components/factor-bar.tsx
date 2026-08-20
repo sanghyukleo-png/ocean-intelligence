@@ -11,7 +11,7 @@ export function FactorBar({
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="text-muted">
-          {label} <span className="text-border">· {weightPct}% weight</span>
+          {label} <span className="text-border">· 가중치 {weightPct}%</span>
         </span>
         <span className="font-mono-num text-foreground">{value}</span>
       </div>

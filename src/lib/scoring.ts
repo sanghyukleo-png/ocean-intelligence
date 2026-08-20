@@ -1,9 +1,9 @@
 import { Opportunity, OpportunityTier, ScoredOpportunity } from "@/types";
 
 // ─────────────────────────────────────────────────────────────────────────
-// DETERMINISTIC OPPORTUNITY SCORING ENGINE
-// Rules calculate the score. AI (or, in demo/fallback mode, a deterministic
-// template) only explains the result — it never determines or alters it.
+// 결정론적 영업기회 스코어링 엔진 (DETERMINISTIC OPPORTUNITY SCORING ENGINE)
+// 점수는 규칙(수식)이 계산합니다. AI(또는 데모/폴백 모드의 결정론적 템플릿)는
+// 그 결과를 설명할 뿐, 점수 자체를 결정하거나 바꾸지 않습니다.
 // ─────────────────────────────────────────────────────────────────────────
 
 export const SCORE_WEIGHTS = {
@@ -34,38 +34,48 @@ export function classifyTier(score: number): OpportunityTier {
   return "LOW";
 }
 
+export const TIER_LABEL_KO: Record<OpportunityTier, string> = {
+  LOW: "낮음",
+  MEDIUM: "보통",
+  HIGH: "높음",
+  "VERY HIGH": "매우 높음",
+};
+
 function dominantFactorLabel(o: Opportunity): string {
   const f = o.factors;
   const entries: [string, number][] = [
-    ["aging fleet profile", f.fleetAge],
-    ["a wide orderbook coverage gap", f.orderbookGap],
-    ["fleet scale", f.fleetSize],
-    ["fleet growth trajectory", f.fleetGrowth],
-    ["alternative-fuel transition posture", f.fuelTransition],
-    ["current market conditions", f.marketCondition],
+    ["노후화된 선대", f.fleetAge],
+    ["넓은 발주잔량 커버리지 격차", f.orderbookGap],
+    ["선대 규모", f.fleetSize],
+    ["선대 성장 추세", f.fleetGrowth],
+    ["대체연료 전환 태세", f.fuelTransition],
+    ["현재 시장 상황", f.marketCondition],
   ];
   entries.sort((a, b) => b[1] - a[1]);
   return entries[0][0];
 }
 
-// Deterministic template — stands in for an LLM explanation in demo/fallback
-// mode. Structure mirrors what an AIProvider.generateCommercialInsight call
-// would return.
+// 결정론적 템플릿 — 데모/폴백 모드에서 LLM 설명을 대신합니다.
+// 구조는 실제 AIProvider.generateCommercialInsight 호출이 반환할 형태를 그대로 모사합니다.
 export function explainScore(o: Opportunity, score: number, tier: OpportunityTier): string {
   const dominant = dominantFactorLabel(o);
-  return `${o.customer} scores ${score}/100 (${tier}), primarily driven by ${dominant}. With an average fleet age of ${o.averageFleetAge.toFixed(1)} years against an orderbook of only ${o.orderbook} vessel${o.orderbook === 1 ? "" : "s"}, the fleet-renewal signal is ${score >= 70 ? "material" : "developing"}.`;
+  return `${o.customer}은(는) ${score}/100점(${TIER_LABEL_KO[tier]})으로, 주로 ${dominant} 요인에 의해 견인되고 있습니다. 평균 선령 ${o.averageFleetAge.toFixed(
+    1
+  )}년에 발주잔량은 ${o.orderbook}척에 불과해, 선대 교체 시그널이 ${
+    score >= 70 ? "뚜렷하게 나타나고" : "형성되는 단계에 있는 것으로"
+  } 판단됩니다.`;
 }
 
 export function recommendedAction(tier: OpportunityTier, o: Opportunity): string {
   switch (tier) {
     case "VERY HIGH":
-      return `Initiate newbuilding discussion — prioritize ${o.segment} proposal with technical PT within this quarter.`;
+      return `신조 상담을 즉시 개시 — 이번 분기 내 ${o.segment} 제안과 기술 PT를 최우선 진행.`;
     case "HIGH":
-      return `Schedule a commercial touchpoint to introduce fleet-renewal economics for ${o.segment}.`;
+      return `${o.segment} 세그먼트의 선대 교체 경제성을 소개하는 상업적 접점을 조속히 마련.`;
     case "MEDIUM":
-      return `Add to nurture pipeline — monitor orderbook and fuel-transition signals for the next 1-2 quarters.`;
+      return `육성 파이프라인에 편입 — 향후 1~2분기 동안 발주잔량 및 연료전환 시그널을 모니터링.`;
     case "LOW":
-      return `Maintain relationship visibility only — no near-term newbuilding trigger detected.`;
+      return `관계 유지 수준의 접촉만 진행 — 단기 신조 트리거는 감지되지 않음.`;
   }
 }
 

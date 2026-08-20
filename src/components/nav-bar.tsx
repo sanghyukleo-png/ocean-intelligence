@@ -6,11 +6,11 @@ import { Anchor } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/market", label: "MARKET" },
-  { href: "/vessels", label: "VESSELS" },
-  { href: "/compare", label: "COMPARE" },
-  { href: "/opportunities", label: "OPPORTUNITIES" },
-  { href: "/analytics", label: "ANALYTICS" },
+  { href: "/market", label: "시황" },
+  { href: "/vessels", label: "선박" },
+  { href: "/compare", label: "비교" },
+  { href: "/opportunities", label: "영업기회" },
+  { href: "/analytics", label: "분석" },
 ];
 
 export function NavBar() {
@@ -53,11 +53,11 @@ export function NavBar() {
             href="/about"
             className="hidden text-xs text-muted hover:text-foreground sm:block"
           >
-            About
+            소개
           </Link>
           <span className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[10px] font-medium tracking-wide text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-            DEMO ENVIRONMENT
+            데모 환경
           </span>
         </div>
       </div>

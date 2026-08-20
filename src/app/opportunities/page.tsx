@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Target } from "lucide-react";
 import { mockOpportunities } from "@/data/mockOpportunities";
-import { scoreAllOpportunities, TIER_COLOR } from "@/lib/scoring";
+import { scoreAllOpportunities, TIER_COLOR, TIER_LABEL_KO } from "@/lib/scoring";
 import { Card, CardLabel } from "@/components/ui/card";
+import { PageIntro } from "@/components/page-intro";
 import { cn } from "@/lib/utils";
 
 export default function OpportunitiesPage() {
@@ -9,14 +11,13 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <p className="text-xs font-medium tracking-[0.16em] text-accent">SALES OPPORTUNITY RADAR</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">Opportunities</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Customers ranked by a deterministic Opportunity Score. Rules calculate the score — AI
-          only explains it and recommends a next action. Demo data / fictional customer names.
-        </p>
-      </section>
+      <PageIntro
+        icon={Target}
+        eyebrow="영업기회 레이더"
+        title="영업기회"
+        purpose="후보 고객사(선사)를 규칙 기반 스코어링 엔진으로 0~100점 채점해 낮음/보통/높음/매우 높음 등급으로 자동 분류하고, 점수 순으로 정렬해 보여줍니다."
+        howItWorks="점수는 선령·발주잔량 격차·선대 규모·선대 성장률·연료전환 비율·시장 상황 6개 요인에 가중치를 곱해 합산하는 결정론적 수식(src/lib/scoring.ts)만으로 계산됩니다. AI는 그 결과를 설명하고 다음 액션을 제안할 뿐, 점수를 직접 계산하거나 바꾸지 않습니다. 카드를 클릭하면 상세 분석과 AI 영업 브리프 생성 화면으로 이동합니다."
+      />
 
       <section className="grid grid-cols-1 gap-3">
         {scored.map((o) => (
@@ -42,16 +43,16 @@ export default function OpportunitiesPage() {
 
                 <div className="flex shrink-0 items-center gap-6">
                   <div className="hidden text-right sm:block">
-                    <CardLabel>Fleet</CardLabel>
-                    <p className="font-mono-num text-sm text-foreground">{o.fleetSize} vessels</p>
+                    <CardLabel>선대 규모</CardLabel>
+                    <p className="font-mono-num text-sm text-foreground">{o.fleetSize}척</p>
                   </div>
                   <div className="hidden text-right sm:block">
-                    <CardLabel>Avg Age</CardLabel>
-                    <p className="font-mono-num text-sm text-foreground">{o.averageFleetAge.toFixed(1)} yrs</p>
+                    <CardLabel>평균 선령</CardLabel>
+                    <p className="font-mono-num text-sm text-foreground">{o.averageFleetAge.toFixed(1)}년</p>
                   </div>
                   <div className="hidden text-right sm:block">
-                    <CardLabel>Orderbook</CardLabel>
-                    <p className="font-mono-num text-sm text-foreground">{o.orderbook}</p>
+                    <CardLabel>발주잔량</CardLabel>
+                    <p className="font-mono-num text-sm text-foreground">{o.orderbook}척</p>
                   </div>
                   <div
                     className={cn(
@@ -60,7 +61,7 @@ export default function OpportunitiesPage() {
                     )}
                   >
                     <span className="font-mono-num text-xl font-bold leading-none">{o.score}</span>
-                    <span className="mt-1 text-[10px] font-semibold tracking-wide">{o.tier}</span>
+                    <span className="mt-1 text-[10px] font-semibold tracking-wide">{TIER_LABEL_KO[o.tier]}</span>
                   </div>
                 </div>
               </div>

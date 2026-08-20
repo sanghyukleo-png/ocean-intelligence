@@ -1,22 +1,22 @@
 import { mockMarketIndicators, mockMarketSignals } from "@/data/mockMarket";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+import { PageIntro } from "@/components/page-intro";
+import { cn, IMPORTANCE_LABEL_KO } from "@/lib/utils";
+import { ArrowDown, ArrowRight, ArrowUp, LineChart } from "lucide-react";
 
 const DIRECTION_ICON = { up: ArrowUp, down: ArrowDown, flat: ArrowRight };
 
 export default function MarketPage() {
   return (
     <div className="space-y-10">
-      <section>
-        <p className="text-xs font-medium tracking-[0.16em] text-accent">MACRO INTELLIGENCE</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">Market</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Simulated fleet, orderbook, and freight indicators tracked across the merchant fleet.
-          All values below are demo/simulated data and do not represent live market information.
-        </p>
-      </section>
+      <PageIntro
+        icon={LineChart}
+        eyebrow="매크로 인텔리전스"
+        title="시황"
+        purpose="전 세계 상선대 규모, 평균 선령, 발주잔량, 신조 계약, 해체 실적, 대체연료 전환 비중, 종합 운임지수, 해상 물동량까지 8개 핵심 시장 지표와 주요 시장 시그널을 한 화면에서 확인합니다."
+        howItWorks="모든 수치는 데모용 시뮬레이션 데이터(src/data/mockMarket.ts)이며, 화면은 이를 스파크라인·추세 배지로 그대로 시각화합니다. 실제 서비스에서는 이 자리에 실시간 시장 데이터 피드가 연결됩니다."
+      />
 
       <section>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -27,7 +27,7 @@ export default function MarketPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold tracking-wide text-foreground">Market Signals</h2>
+        <h2 className="mb-3 text-sm font-semibold tracking-wide text-foreground">시장 시그널</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {mockMarketSignals.map((s) => {
             const Icon = DIRECTION_ICON[s.direction];
@@ -62,7 +62,7 @@ export default function MarketPage() {
                         : "border-border bg-surface-2 text-muted"
                     )}
                   >
-                    {s.importance}
+                    {IMPORTANCE_LABEL_KO[s.importance]}
                   </span>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-muted">{s.summary}</p>
