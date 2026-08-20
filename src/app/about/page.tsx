@@ -5,7 +5,7 @@ export default function AboutPage() {
     <div className="mx-auto max-w-2xl space-y-8">
       <section>
         <p className="text-xs font-medium tracking-[0.16em] text-accent">이 프로젝트 소개</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
+        <h1 className="mt-2 text-2xl font-bold text-foreground">
           왜 석유화학 트레이더가 해양 인텔리전스 제품을 만들었는가
         </h1>
       </section>

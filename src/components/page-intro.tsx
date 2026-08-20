@@ -17,7 +17,7 @@ export function PageIntro({
     <section className="space-y-4">
       <div>
         <p className="text-xs font-semibold tracking-[0.16em] text-accent">{eyebrow}</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">{title}</h1>
+        <h1 className="mt-2 text-2xl font-bold text-foreground">{title}</h1>
       </div>
       <div className="rounded-lg border border-border bg-surface-2/60 p-4">
         <div className="flex items-start gap-3">

@@ -16,31 +16,28 @@ export default function HomePage() {
     <div className="space-y-10">
       {/* Hero */}
       <section className="animate-fade-in-up">
-        <p className="text-xs font-medium tracking-[0.16em] text-accent">
-          종합 커맨드 대시보드
+        <p className="text-xs font-semibold tracking-[0.16em] text-accent">
+          해양·조선 영업기획 대시보드
         </p>
-        <h1 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
-          시장 시그널에서 영업 액션까지, 하나의 워크플로우로.
+        <h1 className="mt-2 max-w-2xl text-4xl font-bold leading-tight text-foreground sm:text-5xl">
+          시장 인텔리전스 · 영업기회 스코어링 · 세일즈 브리프
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          OCEAN INTELLIGENCE는 선대·시황·선박 데이터를 등급화된 영업기회와 AI 지원 영업
-          브리프로 전환해, 조선 영업기획 실무를 데이터 기반으로 시연하는 포트폴리오
-          프로젝트입니다. 아래 지표와 카드는 실제 클릭·조작이 가능한 데모입니다 — 각 모듈로
-          이동해 직접 테스트해보세요.
+          선대·시황·선박 데이터 기반 영업기회 자동 채점, AI 브리프 생성. 전 모듈 실제 동작.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/opportunities"
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-xs font-semibold text-background transition-opacity hover:opacity-90"
           >
-            영업기회 보기
+            영업기회
             <ArrowUpRight size={14} />
           </Link>
           <Link
             href="/market"
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-surface"
           >
-            시황 인텔리전스 살펴보기
+            시황
           </Link>
         </div>
       </section>

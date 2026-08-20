@@ -40,7 +40,7 @@ export default async function OpportunityDetailPage({
           <p className="text-xs font-medium tracking-[0.16em] text-accent">
             {opportunity.segment.toUpperCase()}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold text-foreground">{opportunity.customer}</h1>
+          <h1 className="mt-1 text-2xl font-bold text-foreground">{opportunity.customer}</h1>
           <p className="mt-1 text-sm text-muted">{opportunity.country}</p>
         </div>
         <div className={cn("flex flex-col items-center rounded-lg border px-6 py-3", TIER_COLOR[scored.tier])}>

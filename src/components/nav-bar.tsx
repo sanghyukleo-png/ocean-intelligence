@@ -28,12 +28,12 @@ export function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded bg-accent/15 text-accent">
-            <Anchor size={16} strokeWidth={2.25} />
+          <span className="flex h-8 w-8 items-center justify-center rounded bg-accent/15 text-accent">
+            <Anchor size={18} strokeWidth={2.5} />
           </span>
-          <span className="text-sm font-semibold tracking-[0.14em] text-foreground">
+          <span className="text-base font-bold tracking-[0.12em] text-foreground">
             OCEAN INTELLIGENCE
           </span>
         </Link>
@@ -46,10 +46,10 @@ export function NavBar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded px-3 py-1.5 text-xs font-medium tracking-wide transition-colors",
+                  "rounded px-4 py-2 text-sm font-semibold tracking-wide transition-colors",
                   active
                     ? "bg-surface-2 text-accent"
-                    : "text-muted hover:bg-surface hover:text-foreground"
+                    : "text-foreground/80 hover:bg-surface hover:text-foreground"
                 )}
               >
                 {item.label}
@@ -89,10 +89,10 @@ export function NavBar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded px-3 py-2 text-sm font-medium tracking-wide transition-colors",
+                  "rounded px-3 py-2.5 text-base font-semibold tracking-wide transition-colors",
                   active
                     ? "bg-surface-2 text-accent"
-                    : "text-muted hover:bg-surface hover:text-foreground"
+                    : "text-foreground/80 hover:bg-surface hover:text-foreground"
                 )}
               >
                 {item.label}
