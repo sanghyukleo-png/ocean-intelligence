@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OCEAN INTELLIGENCE
 
-## Getting Started
+AI-powered Maritime Market & Sales Intelligence — a portfolio project demonstrating
+market-intelligence and sales-planning workflows for merchant shipbuilding sales.
 
-First, run the development server:
+**Workflow:** Market Signal → Vessel Intelligence → Commercial Assessment → Sales Opportunity →
+Recommended Action → Sales Brief.
+
+## Status: MVP (Tier 1 complete)
+
+| Module | Status |
+|---|---|
+| Home — Maritime Command Dashboard | ✅ |
+| Market — Macro Intelligence | ✅ |
+| Opportunities — Sales Opportunity Radar (deterministic scoring engine) | ✅ |
+| Generate Sales Brief | ✅ |
+| Analytics — Voyage Economics / TCE calculator | ✅ |
+| Compare — side-by-side vessel analysis | 🚧 stub |
+| Vessels — AI PDF/Q88 extractor | 🚧 stub |
+
+All data is simulated/demo data. Nothing in this app represents live market information or real
+companies.
+
+## Stack
+
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Recharts · Lucide icons.
+No external UI framework dependency (shadcn/ui init was skipped due to sandbox network
+restrictions; equivalent primitives are hand-built in `src/components/ui`).
+
+## Architecture
+
+- `src/types` — shared TypeScript interfaces (Vessel, Opportunity, MarketIndicator, SalesBrief …)
+- `src/data` — typed mock data, isolated from UI components
+- `src/lib/scoring.ts` — deterministic Opportunity Scoring Engine (rules calculate; AI only
+  explains)
+- `src/lib/tce.ts` — deterministic Voyage Economics / TCE calculator (pure math, no LLM)
+- `src/lib/salesBrief.ts` — deterministic Sales Brief generator (demo/fallback path for the
+  `AIProvider.generateSalesBrief` contract)
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx vercel        # first deploy / link project
+npx vercel --prod # production deploy
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `.env.example` for the environment variables needed once Supabase / an LLM provider are wired
+in. The app runs end-to-end without any of them (demo mode).
