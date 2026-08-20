@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Columns3, Sparkles } from "lucide-react";
 import { PageIntro } from "@/components/page-intro";
 import { Card } from "@/components/ui/card";
+import { VesselIcon } from "@/components/vessel-icon";
 import { mockVessels } from "@/data/mockVessels";
 import { buildCompareRows, generateComparisonInsight } from "@/lib/vesselCompare";
 import { cn, formatNumber } from "@/lib/utils";
@@ -36,8 +37,8 @@ export default function ComparePage() {
         icon={Columns3}
         eyebrow="선박 비교 분석"
         title="비교"
-        purpose="선박 데이터베이스에서 2~4척을 선택해 DWT, 선령, 속력, 연료소모량, 화물창 용량 등을 표 형태로 나란히 비교하고, 값 차이를 자동으로 하이라이트합니다."
-        howItWorks="비교표의 모든 항목과 우열 판정은 순수 계산 로직(src/lib/vesselCompare.ts)으로 산출됩니다. LLM은 사용되지 않습니다. 아래에서 선박을 2~4척 체크한 뒤 비교 결과와 결정론적 데이터에서 도출된 AI 상업 인사이트를 확인해보세요."
+        purpose="선박 2~4척을 골라 주요 제원을 표로 비교합니다."
+        howItWorks="선박을 체크하면 값 차이가 자동으로 표시됩니다."
       />
 
       <Card>
@@ -63,6 +64,7 @@ export default function ComparePage() {
                     : "border-border bg-surface hover:border-accent/30"
                 )}
               >
+                <VesselIcon vesselType={v.vesselType} className="h-6 w-11" />
                 <span className="font-medium text-foreground">{v.vesselName}</span>
                 <span className="text-[10px] text-muted">{v.vesselType} · {v.builtYear}년</span>
               </button>
@@ -84,6 +86,7 @@ export default function ComparePage() {
                   <th className="px-4 py-3 font-medium">항목</th>
                   {selectedVessels.map((v) => (
                     <th key={v.id} className="px-4 py-3 font-medium text-foreground">
+                      <VesselIcon vesselType={v.vesselType} className="mb-1 h-6 w-11" />
                       {v.vesselName}
                       <div className="mt-0.5 text-[10px] font-normal normal-case text-muted">{v.owner}</div>
                     </th>

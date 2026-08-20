@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2, CircleDashed, FileScan, Loader2, RotateCcw, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, CircleDashed, FileScan, Loader2, Radar, RotateCcw, Sparkles } from "lucide-react";
 import { PageIntro } from "@/components/page-intro";
 import { Card, CardLabel } from "@/components/ui/card";
+import { VesselIcon } from "@/components/vessel-icon";
+import { VoyageMap } from "@/components/voyage-map";
 import { mockVessels, sampleVesselSpecText } from "@/data/mockVessels";
 import { extractVesselFromText, VesselExtractionResult } from "@/lib/vesselExtraction";
+import { getDemoRoute } from "@/lib/voyageDemo";
 import { cn, formatNumber } from "@/lib/utils";
 
 const STEPS = ["원문 텍스트 스캔", "라벨-값 패턴 매칭", "필드 정규화 및 검증", "신뢰도·출처 산출"];
@@ -23,6 +26,9 @@ export default function VesselsPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [stepIndex, setStepIndex] = useState(0);
   const [result, setResult] = useState<VesselExtractionResult | null>(null);
+  const [trackedId, setTrackedId] = useState(mockVessels[0].id);
+  const trackedVessel = mockVessels.find((v) => v.id === trackedId) ?? mockVessels[0];
+  const route = useMemo(() => getDemoRoute(trackedVessel), [trackedVessel]);
 
   async function handleExtract() {
     if (!rawText.trim()) return;
@@ -54,8 +60,8 @@ export default function VesselsPage() {
         icon={FileScan}
         eyebrow="선박 제원 인텔리전스"
         title="선박"
-        purpose="Q88/제원표 형태로 붙여넣은 원문 텍스트에서 선명, IMO 번호, DWT, 선급, 소유주 등 핵심 필드를 자동으로 추출하고, 각 필드가 어느 원문 문장에서 추출됐는지(출처)와 신뢰도를 함께 보여줍니다."
-        howItWorks="정규식 기반 패턴 매칭 엔진(src/lib/vesselExtraction.ts)이 원문을 줄 단위로 스캔해 라벨-값 패턴을 찾아냅니다. '샘플 불러오기'로 데모 텍스트를 채운 뒤 '추출 시작'을 눌러 직접 테스트해보세요. 매칭에 실패한 필드는 값을 지어내지 않고 신뢰도 0으로 남겨, AI/규칙이 임의로 값을 생성하지 않는다는 원칙(no-hallucination)을 그대로 보여줍니다."
+        purpose="선박 제원 텍스트를 붙여넣으면 핵심 정보를 자동으로 추출합니다."
+        howItWorks="'샘플 불러오기'로 채운 뒤 '추출 시작'을 눌러보세요."
       />
 
       <Card>
@@ -187,6 +193,7 @@ export default function VesselsPage() {
           <table className="w-full min-w-[720px] text-left text-xs">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted">
+                <th className="px-4 py-3 font-medium"></th>
                 <th className="px-4 py-3 font-medium">선명</th>
                 <th className="px-4 py-3 font-medium">선종</th>
                 <th className="px-4 py-3 font-medium">소유주</th>
@@ -199,6 +206,9 @@ export default function VesselsPage() {
             <tbody>
               {mockVessels.map((v) => (
                 <tr key={v.id} className="border-b border-border last:border-0 hover:bg-surface-2">
+                  <td className="px-2 py-1.5">
+                    <VesselIcon vesselType={v.vesselType} className="h-6 w-11" />
+                  </td>
                   <td className="px-4 py-2.5 font-medium text-foreground">{v.vesselName}</td>
                   <td className="px-4 py-2.5 text-muted">{v.vesselType}</td>
                   <td className="px-4 py-2.5 text-muted">{v.owner}</td>
@@ -211,6 +221,39 @@ export default function VesselsPage() {
             </tbody>
           </table>
         </Card>
+      </section>
+
+      <section>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Radar size={15} className="text-accent" />
+            <h2 className="text-sm font-bold tracking-wide text-foreground">실시간 위치 추적 (데모)</h2>
+          </div>
+          <select
+            value={trackedId}
+            onChange={(e) => setTrackedId(e.target.value)}
+            className="rounded border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none focus:border-accent"
+          >
+            {mockVessels.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.vesselName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-3 mb-3">
+          <VesselIcon vesselType={trackedVessel.vesselType} className="h-9 w-16" />
+          <div>
+            <p className="text-sm font-bold text-foreground">{trackedVessel.vesselName}</p>
+            <p className="text-[11px] text-muted">{trackedVessel.vesselType} · {trackedVessel.flag}</p>
+          </div>
+        </div>
+        <VoyageMap
+          origin={route.origin}
+          destination={route.destination}
+          progressPct={route.progressPct}
+          etaDays={route.etaDays}
+        />
       </section>
     </div>
   );

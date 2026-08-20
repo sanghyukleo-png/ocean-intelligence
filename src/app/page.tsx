@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Fuel, Newspaper, TrendingUp } from "lucide-react";
 import { mockMarketIndicators, mockMarketSignals } from "@/data/mockMarket";
 import { mockOpportunities } from "@/data/mockOpportunities";
 import { scoreAllOpportunities, TIER_COLOR, TIER_LABEL_KO } from "@/lib/scoring";
 import { KpiCard } from "@/components/kpi-card";
 import { Card } from "@/components/ui/card";
+import { getBunkerPrices, getShippingNews } from "@/lib/liveFeed";
 import { cn, IMPORTANCE_LABEL_KO } from "@/lib/utils";
 
-export default function HomePage() {
+export default async function HomePage() {
   const heroIndicators = mockMarketIndicators.slice(0, 4);
   const topSignals = mockMarketSignals.slice(0, 3);
   const topOpportunities = scoreAllOpportunities(mockOpportunities).slice(0, 3);
+  const [news, bunker] = await Promise.all([getShippingNews(), getBunkerPrices()]);
 
   return (
     <div className="space-y-10">
@@ -65,7 +67,7 @@ export default function HomePage() {
             {topSignals.map((s) => (
               <Card key={s.id} className="animate-fade-in-up">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <span className="flex items-center gap-1.5 text-base font-bold text-foreground">
                     <TrendingUp size={14} className="text-accent" />
                     {s.title}
                   </span>
@@ -126,6 +128,85 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+        </section>
+      </div>
+
+      {/* News + Bunker */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+        <section className="lg:col-span-3">
+          <div className="mb-3 flex items-center gap-2">
+            <Newspaper size={15} className="text-accent" />
+            <h2 className="text-sm font-bold tracking-wide text-foreground">해운·조선 뉴스</h2>
+            <span
+              className={cn(
+                "ml-auto rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wide",
+                news.live ? "border-positive/40 bg-positive/10 text-positive" : "border-border bg-surface-2 text-muted"
+              )}
+            >
+              {news.live ? "실시간 수집" : "데모 데이터"}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {news.items.map((n, i) => (
+              <a
+                key={i}
+                href={n.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Card className="animate-fade-in-up flex items-center gap-3 hover:border-accent/40">
+                  {n.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={n.image}
+                      alt=""
+                      className="h-14 w-20 shrink-0 rounded object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-14 w-20 shrink-0 items-center justify-center rounded bg-accent/10 text-accent">
+                      <Newspaper size={20} />
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-foreground">{n.title}</p>
+                    <p className="mt-1 text-[11px] text-muted">
+                      {n.source} · {n.pubDate}
+                    </p>
+                  </div>
+                </Card>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section className="lg:col-span-2">
+          <div className="mb-3 flex items-center gap-2">
+            <Fuel size={15} className="text-accent" />
+            <h2 className="text-sm font-bold tracking-wide text-foreground">벙커유 가격</h2>
+            <span
+              className={cn(
+                "ml-auto rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wide",
+                bunker.live ? "border-positive/40 bg-positive/10 text-positive" : "border-border bg-surface-2 text-muted"
+              )}
+            >
+              {bunker.live ? "실시간 수집" : "데모 데이터"}
+            </span>
+          </div>
+          <Card className="animate-fade-in-up space-y-3">
+            {bunker.items.map((b) => (
+              <div key={b.grade} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+                <span className="text-sm font-bold text-foreground">{b.grade}</span>
+                <div className="text-right">
+                  <span className="font-mono-num text-base font-semibold text-foreground">
+                    ${b.price.toLocaleString()}
+                  </span>
+                  <span className="ml-1 text-[11px] text-muted">/MT</span>
+                </div>
+              </div>
+            ))}
+            <p className="pt-1 text-[10px] text-muted">글로벌 항구 평균 기준 (shipandbunker.com 크롤링, 실패 시 데모 대체)</p>
+          </Card>
         </section>
       </div>
     </div>

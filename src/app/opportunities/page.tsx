@@ -15,8 +15,8 @@ export default function OpportunitiesPage() {
         icon={Target}
         eyebrow="영업기회 레이더"
         title="영업기회"
-        purpose="후보 고객사(선사)를 규칙 기반 스코어링 엔진으로 0~100점 채점해 낮음/보통/높음/매우 높음 등급으로 자동 분류하고, 점수 순으로 정렬해 보여줍니다."
-        howItWorks="점수는 선령·발주잔량 격차·선대 규모·선대 성장률·연료전환 비율·시장 상황 6개 요인에 가중치를 곱해 합산하는 결정론적 수식(src/lib/scoring.ts)만으로 계산됩니다. AI는 그 결과를 설명하고 다음 액션을 제안할 뿐, 점수를 직접 계산하거나 바꾸지 않습니다. 카드를 클릭하면 상세 분석과 AI 영업 브리프 생성 화면으로 이동합니다."
+        purpose="고객사를 점수화해 영업 우선순위를 자동으로 정렬합니다."
+        howItWorks="카드를 클릭하면 상세 분석과 AI 브리프를 볼 수 있습니다."
       />
 
       <section className="grid grid-cols-1 gap-3">

@@ -14,8 +14,8 @@ export default function MarketPage() {
         icon={LineChart}
         eyebrow="매크로 인텔리전스"
         title="시황"
-        purpose="전 세계 상선대 규모, 평균 선령, 발주잔량, 신조 계약, 해체 실적, 대체연료 전환 비중, 종합 운임지수, 해상 물동량까지 8개 핵심 시장 지표와 주요 시장 시그널을 한 화면에서 확인합니다."
-        howItWorks="모든 수치는 데모용 시뮬레이션 데이터(src/data/mockMarket.ts)이며, 화면은 이를 스파크라인·추세 배지로 그대로 시각화합니다. 실제 서비스에서는 이 자리에 실시간 시장 데이터 피드가 연결됩니다."
+        purpose="핵심 시장 지표 8개와 주요 이슈를 한눈에 보여줍니다."
+        howItWorks="그래프와 배지로 최근 추세를 표시합니다. (데모 데이터)"
       />
 
       <section>
@@ -48,7 +48,7 @@ export default function MarketPage() {
                       <Icon size={13} strokeWidth={2.5} />
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{s.title}</p>
+                      <p className="text-base font-bold leading-snug text-foreground">{s.title}</p>
                       <p className="text-[11px] font-mono-num text-muted">{s.segment}</p>
                     </div>
                   </div>

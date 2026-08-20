@@ -1,8 +1,14 @@
 import { MarketIndicator } from "@/types";
-import { Card, CardLabel } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { TrendBadge } from "@/components/trend-badge";
 import { Sparkline } from "@/components/sparkline";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+
+const BORDER_COLOR: Record<MarketIndicator["direction"], string> = {
+  up: "border-l-positive",
+  down: "border-l-negative",
+  flat: "border-l-border",
+};
 
 export function KpiCard({ indicator }: { indicator: MarketIndicator }) {
   const sparkColor =
@@ -13,9 +19,9 @@ export function KpiCard({ indicator }: { indicator: MarketIndicator }) {
       : "var(--muted)";
 
   return (
-    <Card className="animate-fade-in-up hover:border-accent/30">
-      <div className="flex items-start justify-between">
-        <CardLabel>{indicator.label}</CardLabel>
+    <Card className={cn("animate-fade-in-up border-l-4 hover:shadow-md", BORDER_COLOR[indicator.direction])}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-bold leading-snug text-foreground">{indicator.label}</p>
         <TrendBadge direction={indicator.direction} changePct={indicator.changePct} />
       </div>
       <div className="mt-2 flex items-baseline gap-1.5">
