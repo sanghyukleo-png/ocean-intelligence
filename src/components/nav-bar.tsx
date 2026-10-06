@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Anchor, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -28,14 +30,10 @@ export function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded bg-accent/15 text-accent">
-            <Anchor size={18} strokeWidth={2.5} />
-          </span>
-          <span className="text-base font-bold tracking-[0.12em] text-foreground">
-            OCEAN INTELLIGENCE
-          </span>
+      <div className="container-page flex h-16 items-center justify-between">
+        <Link href="/" aria-label="OCEAN INTELLIGENCE 홈" className="flex items-center rounded-md">
+          <Logo className="hidden sm:inline-flex" />
+          <Logo compact className="sm:hidden" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -65,10 +63,7 @@ export function NavBar() {
           >
             소개
           </Link>
-          <span className="hidden items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[10px] font-medium tracking-wide text-muted sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-            데모 환경
-          </span>
+          <ThemeToggle />
           <button
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
@@ -81,7 +76,7 @@ export function NavBar() {
       </div>
 
       {menuOpen && (
-        <nav className="flex flex-col gap-1 border-t border-border px-6 py-3 md:hidden">
+        <nav className="container-page flex flex-col gap-1 border-t border-border py-3 md:hidden">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -105,10 +100,6 @@ export function NavBar() {
           >
             소개
           </Link>
-          <span className="mt-1 flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[10px] font-medium tracking-wide text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-            데모 환경
-          </span>
         </nav>
       )}
     </header>

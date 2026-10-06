@@ -3,7 +3,7 @@ import Link from "next/link";
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-border py-8">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-6 text-center text-xs text-muted">
+      <div className="container-page flex flex-col gap-2 text-center text-xs text-muted">
         <p>
           개인 AI 제품 프로젝트 — 석유화학 시장 인텔리전스
           <span className="mx-1.5 text-border">→</span>글로벌 B2B 영업

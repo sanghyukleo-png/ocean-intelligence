@@ -131,5 +131,5 @@ export const TIER_COLOR: Record<OpportunityTier, string> = {
   LOW: "text-score-low border-score-low/40 bg-score-low/10",
   MEDIUM: "text-score-medium border-score-medium/40 bg-score-medium/10",
   HIGH: "text-score-high border-score-high/40 bg-score-high/10",
-  "VERY HIGH": "text-accent border-accent/40 bg-accent/10",
+  "VERY HIGH": "text-score-vhigh border-score-vhigh/40 bg-score-vhigh/10",
 };

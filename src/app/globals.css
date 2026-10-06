@@ -1,74 +1,487 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #fff3ea;
-  --border: #e7e2db;
-  --foreground: #1c1a17;
-  --muted: #6b6459;
-  --accent: #ff6a1a;
-  --accent-dim: #ffe1cc;
-  --positive: #1a8a4a;
-  --negative: #d93025;
-  --warning: #b8590a;
-  --score-low: #9a9186;
-  --score-medium: #2563eb;
-  --score-high: #ff6a1a;
-  --score-vhigh: #c8390e;
+/* 테마는 <html data-theme>로 결정한다. 초기값은 layout.tsx의 인라인 스크립트가
+   localStorage → prefers-color-scheme → dark 순서로 정한다. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/* ── 컬러 토큰 ─────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #070b14;
+  --bg-raised: #0c1220;
+  --bg-inset: #060911;
+  --bg-subtle: #111a2b; /* 호버·선택 행·칩 */
+  --line: #1b2437;
+  --line-strong: #2a3650;
+  --fg: #e8edf7;
+  --fg-muted: #8a96ad;
+  --fg-faint: #56617a; /* 장식·비활성 전용. 정보 텍스트에 쓰지 않는다 (3.2:1) */
+  --accent: #4fd1c5;
+  --accent-ink: #04201d;
+  --up: #3ddc97;
+  --down: #ff6b6b;
+  --warn: #f5b94a;
+  --info: #6ea8fe;
+
+  --highlight: rgb(255 255 255 / 0.04);
+  --grid-line: rgb(232 237 247 / 0.04);
+  --glow: rgb(79 209 197 / 0.06);
+  --noise-opacity: 0.03;
+
+  /* 지도 (11·12장 공유) */
+  --map-sea: #070b14;
+  --map-land: #0c1220;
+  --map-coast: #22304a;
+  --map-contour: #111b2e;
+  --map-graticule: rgb(232 237 247 / 0.035);
+  --map-label: #8a96ad;
+  --map-route: var(--accent);
+  --map-route-alt: #56617a;
+
+  /* 국내항 클로징 위험도 5단계 (11.4) — 정상 · 관찰 · 주의 · 높음 · 통제 가능성 높음 */
+  --risk-0: #3ddc97;
+  --risk-1: #6ea8fe;
+  --risk-2: #f5b94a;
+  --risk-3: #ff8a3d;
+  --risk-4: #ff4d6a;
+
+  /* 선박 표시: 실제 AIS(채운 삼각형) vs 계획 항차 시뮬레이션(속 빈 마름모·점선) */
+  --vessel-ais: #9fc3ff;
+  --vessel-sim: #c4b5fd;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f8fb;
+  --bg-raised: #ffffff;
+  --bg-inset: #eef2f7;
+  --bg-subtle: #e9eef5;
+  --line: #dce3ec;
+  --line-strong: #c3cdda;
+  --fg: #0b1220;
+  --fg-muted: #4a5568;
+  --fg-faint: #6b7689;
+  /* 지시서 값 #0E8F84는 흰 배경 대비 3.98:1로 AA 미달 → 같은 색상의 #0B7A70(5.2:1) */
+  --accent: #0b7a70;
+  --accent-ink: #ffffff;
+  --up: #13805a;
+  --down: #c2362f;
+  --warn: #9a6212;
+  --info: #2563b5;
+
+  --highlight: rgb(255 255 255 / 0.9);
+  --grid-line: rgb(11 18 32 / 0.05);
+  --glow: rgb(11 122 112 / 0.07);
+  --noise-opacity: 0.025;
+
+  --map-sea: #e8eef5;
+  --map-land: #ffffff;
+  --map-coast: #b9c5d4;
+  --map-contour: #dbe4ee;
+  --map-graticule: rgb(11 18 32 / 0.05);
+  --map-label: #4a5568;
+  --map-route: var(--accent);
+  --map-route-alt: #8a96ad;
+
+  --risk-0: #13805a;
+  --risk-1: #2563b5;
+  --risk-2: #9a6212;
+  --risk-3: #b4510f;
+  --risk-4: #c2253f;
+
+  --vessel-ais: #1f5fa8;
+  --vessel-sim: #6d4fc2;
+}
+
+/* JS가 꺼져 있고 시스템이 라이트일 때 */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f6f8fb;
+    --bg-raised: #ffffff;
+    --bg-inset: #eef2f7;
+    --bg-subtle: #e9eef5;
+    --line: #dce3ec;
+    --line-strong: #c3cdda;
+    --fg: #0b1220;
+    --fg-muted: #4a5568;
+    --fg-faint: #6b7689;
+    --accent: #0b7a70;
+    --accent-ink: #ffffff;
+    --up: #13805a;
+    --down: #c2362f;
+    --warn: #9a6212;
+    --info: #2563b5;
+    --map-sea: #e8eef5;
+    --map-land: #ffffff;
+    --map-coast: #b9c5d4;
+    --map-contour: #dbe4ee;
+    --map-graticule: rgb(11 18 32 / 0.05);
+    --map-label: #4a5568;
+    --map-route: var(--accent);
+    --map-route-alt: #8a96ad;
+
+    --risk-0: #13805a;
+    --risk-1: #2563b5;
+    --risk-2: #9a6212;
+    --risk-3: #b4510f;
+    --risk-4: #c2253f;
+
+    --vessel-ais: #1f5fa8;
+    --vessel-sim: #6d4fc2;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-bg: var(--bg);
+  --color-raised: var(--bg-raised);
+  --color-inset: var(--bg-inset);
+  --color-subtle: var(--bg-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
   --color-accent: var(--accent);
-  --color-accent-dim: var(--accent-dim);
-  --color-positive: var(--positive);
-  --color-negative: var(--negative);
-  --color-warning: var(--warning);
-  --color-score-low: var(--score-low);
-  --color-score-medium: var(--score-medium);
-  --color-score-high: var(--score-high);
-  --color-score-vhigh: var(--score-vhigh);
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+  --color-accent-ink: var(--accent-ink);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+
+  --color-map-sea: var(--map-sea);
+  --color-map-land: var(--map-land);
+  --color-map-coast: var(--map-coast);
+  --color-map-contour: var(--map-contour);
+  --color-map-label: var(--map-label);
+  --color-risk-0: var(--risk-0);
+  --color-risk-1: var(--risk-1);
+  --color-risk-2: var(--risk-2);
+  --color-risk-3: var(--risk-3);
+  --color-risk-4: var(--risk-4);
+  --color-vessel-ais: var(--vessel-ais);
+  --color-vessel-sim: var(--vessel-sim);
+
+  /* 기존 페이지 호환 별칭 — Phase 2에서 페이지를 옮기면서 제거한다 */
+  --color-background: var(--bg);
+  --color-surface: var(--bg-raised);
+  --color-surface-2: var(--bg-subtle);
+  --color-border: var(--line);
+  --color-foreground: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-accent-dim: color-mix(in oklab, var(--accent) 16%, transparent);
+  --color-positive: var(--up);
+  --color-negative: var(--down);
+  --color-warning: var(--warn);
+  --color-score-low: var(--fg-muted);
+  --color-score-medium: var(--info);
+  --color-score-high: var(--accent);
+  --color-score-vhigh: var(--up);
+
+  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* 반경 3종: 카드 12 · 컨트롤 8 · 배지 999 */
+  --radius-card: 12px;
+  --radius-control: 8px;
 }
 
-* {
-  border-color: var(--border);
+/* ── 타이포그래피 ─────────────────────────────────────────────────── */
+@utility type-display {
+  font-size: clamp(2.5rem, 1.2rem + 4.2vw, 4.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+@utility type-h1 {
+  font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+@utility type-h2 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+@utility type-body {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+@utility type-label {
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+@utility type-num-xl {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 1.4rem + 2vw, 3.25rem);
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+/* 기존 클래스 호환 */
+@utility font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+/* 컨테이너: 1440 + 유동 여백 */
+@utility container-page {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
 }
 
-.font-mono-num {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
+/* 카드 표면: 그림자 대신 경계·명도·상단 하이라이트 */
+@utility surface-card {
+  background-color: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 0 var(--highlight);
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+/* ── 베이스 ───────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  /* 숫자 입력·표 셀처럼 단어 단위가 아닌 곳은 기본 줄바꿈 */
+  input,
+  textarea,
+  pre,
+  code,
+  .num,
+  .font-mono-num {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 35%, transparent);
+    color: var(--fg);
+  }
+
+  /* 터치 기기에서 입력 확대 방지(16px 미만이면 iOS가 확대) */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
 }
 
+/* ── 페이지 배경 레이어 (position: fixed) ────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--bg);
+}
+.backdrop__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+}
+.backdrop__glow {
+  position: absolute;
+  left: 50%;
+  top: -30vh;
+  width: min(1600px, 140vw);
+  height: 90vh;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--glow), transparent);
+}
+.backdrop__noise {
+  position: absolute;
+  inset: 0;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+[data-theme="light"] .backdrop__noise {
+  filter: invert(1);
+}
+
+/* ── 포인터 스포트라이트 (data-spotlight 요소) ───────────────────── */
+[data-spotlight] {
+  position: relative;
+  isolation: isolate;
+  transition: border-color 160ms var(--ease-out-expo);
+}
+[data-spotlight]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out-expo);
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--accent) 8%, transparent),
+    transparent 70%
+  );
+}
+@media (hover: hover) {
+  [data-spotlight]:hover {
+    border-color: var(--line-strong);
+  }
+  [data-spotlight]:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ── 슬라이더 (커스텀 트랙) ──────────────────────────────────────── */
+.oi-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+  --pct: 50%;
+}
+.oi-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) 0 var(--pct), var(--line-strong) var(--pct) 100%);
+}
+.oi-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+.oi-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.oi-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: var(--fg);
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 0%, transparent);
+  transition: box-shadow 160ms var(--ease-out-expo);
+}
+.oi-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--fg);
+  border: 3px solid var(--accent);
+}
+.oi-range:hover::-webkit-slider-thumb,
+.oi-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+.oi-range:focus-visible {
+  outline: none;
+}
+
+/* ── 공제 구간 빗금 (Laytime 타임라인 등) ────────────────────────── */
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--fg-muted) 35%, transparent) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* ── 스켈레톤 ─────────────────────────────────────────────────────── */
+@keyframes oi-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.oi-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-subtle);
+}
+.oi-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--fg) 6%, transparent), transparent);
+  animation: oi-shimmer 1.4s var(--ease-out-expo) infinite;
+}
+
+/* 기존 페이지 호환 (Phase 2에서 Reveal 컴포넌트로 교체) */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -76,5 +489,86 @@ body {
   }
 }
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out both;
+  animation: fade-in-up 480ms var(--ease-out-expo) both;
+}
+
+/* ── 스크롤바 ─────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* ── 페이지 전환 (View Transitions) ─────────────────────────────── */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(root) {
+  animation: 160ms var(--ease-in-expo) both oi-vt-out;
+}
+::view-transition-new(root) {
+  animation: 320ms var(--ease-out-expo) both oi-vt-in;
+}
+@keyframes oi-vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes oi-vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ── 모션 축소 ────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation: none !important;
+  }
+  .oi-skeleton::after {
+    display: none;
+  }
+  /* 모션 컴포넌트의 인라인 초기값(opacity 0, translateY)을 무시하고 즉시 표시 */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── 인쇄: 항상 라이트, 장식 제거 ───────────────────────────────── */
+@media print {
+  :root,
+  [data-theme] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --bg-raised: #ffffff;
+    --bg-inset: #ffffff;
+    --bg-subtle: #f3f5f8;
+    --line: #d5dce6;
+    --line-strong: #aab6c6;
+    --fg: #000000;
+    --fg-muted: #3c4656;
+    --fg-faint: #6b7689;
+    --accent: #0b7a70;
+    --accent-ink: #ffffff;
+    --highlight: transparent;
+  }
+  .backdrop,
+  [data-print-hidden] {
+    display: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
 }
