@@ -15,6 +15,21 @@
 - 홈 히어로 문구: A안 "해상 오퍼레이션을 / 숫자로 끝냅니다" 확정. 2026-10-07.
 - LCP 예산(3.6, < 2.0s)은 Lighthouse **실측 스로틀**(`throttlingMethod: "devtools"`, 4G 150ms RTT·1.6Mbps, CPU 4x)로 판정한다.
   기본 시뮬레이션은 비동기 프레임워크 JS까지 LCP 경로로 계산해 하한이 약 2.1–2.4s라 참고값으로만 함께 보고한다. 2026-10-07 승인.
+- Phase 2 변경 10건, 2026-10-07 승인:
+  1. 본문 `overflow-wrap: break-word` (지시서 anywhere는 한글 단어를 중간에서 끊음)
+  2. 히어로에 장식용 항로 호·움직이는 점 없음 — 초크포인트 표시 + 실데이터 자리(11.5 우선)
+  3. 한국 인셋 대신 "오늘의 국내항" 스트립
+  4. 히어로 배경은 Natural Earth 110m 해안선 + 경위선 (등심선 데이터는 별도 다운로드 승인 필요)
+  5. 티커는 Phase 2.5 연결 전까지 "연결 예정"(가짜 값 금지)
+  6. 12px 미만 보조 텍스트는 `--fg-label` (fg-muted 금지 규칙 3.1)
+  7. 라이트 의미색 up `#116F4E`·down `#B2322B`·warn `#895710`·info `#2461B1`, 작은 accent 글자는 `--accent-text`
+  8. 버튼 sm: 보이는 높이 36px, 모바일 터치 영역 44px
+  9. 화면 문구에 "Phase N" 대신 "준비 중"
+  10. 스크롤 리빌은 CSS + IntersectionObserver (motion은 초기 번들에서 제외)
+
+## 진행 상황
+
+@docs/progress.md
 
 ## 데이터 소스 결정 (2026-10-06, 상세는 docs/data-sources.md)
 
