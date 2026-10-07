@@ -1,4 +1,5 @@
 import { Vessel } from "@/types";
+import { formatNumber } from "@/lib/utils";
 
 // ─────────────────────────────────────────────────────────────────────────
 // 선박 비교 엔진 (VESSEL COMPARISON ENGINE)
@@ -10,7 +11,10 @@ export type Favorability = "higher" | "lower" | "neutral";
 export interface CompareRow {
   key: string;
   label: string;
+  /** 행 공통 단위. 선박마다 단위가 다르면 빈 문자열이고 cellUnits에 칸별 단위가 들어간다 */
   unit: string;
+  /** 칸별 단위 — 선택한 선박들의 단위가 섞였을 때만 채운다 */
+  cellUnits?: string[];
   values: (number | undefined)[];
   bestIndex: number | null;
   favorable: Favorability;
@@ -20,7 +24,18 @@ interface CompareFieldSpec {
   key: keyof Vessel;
   label: string;
   unit: string;
+  /** 선박에 따라 단위가 달라지는 항목(화물창 용량)의 단위 판정 */
+  unitOf?: (vessel: Vessel) => string;
   favorable: Favorability;
+}
+
+/**
+ * 화물창 용량의 단위. 데이터 모델에 단위 필드가 없어 선종으로 판정한다 —
+ * 컨테이너선은 적재 가능 컨테이너 수(TEU), 그 외 선종은 화물창 용적(CBM, m³).
+ */
+export function cargoCapacityUnit(vessel: Vessel): "TEU" | "CBM" {
+  const t = vessel.vesselType.toLowerCase();
+  return t.includes("컨테이너") || t.includes("container") ? "TEU" : "CBM";
 }
 
 const COMPARE_FIELDS: CompareFieldSpec[] = [
@@ -32,15 +47,20 @@ const COMPARE_FIELDS: CompareFieldSpec[] = [
   { key: "builtYear", label: "건조연도", unit: "년", favorable: "higher" },
   { key: "speed", label: "속력", unit: "knots", favorable: "higher" },
   { key: "fuelConsumption", label: "연료소모량", unit: "MT/day", favorable: "lower" },
-  { key: "cargoCapacity", label: "화물창 용량", unit: "CBM", favorable: "higher" },
+  { key: "cargoCapacity", label: "화물창 용량", unit: "CBM", unitOf: cargoCapacityUnit, favorable: "higher" },
 ];
 
 export function buildCompareRows(vessels: Vessel[]): CompareRow[] {
   return COMPARE_FIELDS.map((spec) => {
     const values = vessels.map((v) => v[spec.key] as number | undefined);
+    const units = vessels.map((v) => (spec.unitOf ? spec.unitOf(v) : spec.unit));
+    // 값이 있는 칸의 단위만 본다. 단위가 섞이면(CBM vs TEU) 크기를 비교할 수 없다
+    const presentUnits = new Set(units.filter((_, i) => typeof values[i] === "number"));
+    const mixedUnits = presentUnits.size > 1;
+    const unit = mixedUnits ? "" : (presentUnits.values().next().value ?? spec.unit);
     let bestIndex: number | null = null;
 
-    if (spec.favorable !== "neutral") {
+    if (spec.favorable !== "neutral" && !mixedUnits) {
       const defined = values
         .map((v, i) => ({ v, i }))
         .filter((x): x is { v: number; i: number } => typeof x.v === "number");
@@ -50,7 +70,15 @@ export function buildCompareRows(vessels: Vessel[]): CompareRow[] {
       }
     }
 
-    return { key: spec.key as string, label: spec.label, unit: spec.unit, values, bestIndex, favorable: spec.favorable };
+    return {
+      key: spec.key as string,
+      label: spec.label,
+      unit,
+      ...(mixedUnits ? { cellUnits: units } : {}),
+      values,
+      bestIndex,
+      favorable: spec.favorable,
+    };
   });
 }
 
@@ -93,7 +121,7 @@ export function generateComparisonInsight(vessels: Vessel[]): string[] {
   if (withDwt.length > 1) {
     const largest = [...withDwt].sort((a, b) => b.dwt! - a.dwt!)[0];
     insights.push(
-      `선복량 기준으로는 ${largest.vesselName}(DWT ${largest.dwt!.toLocaleString()}MT)이 가장 큰 규모를 보유하고 있어, 대량 화물 장기 계약에 유리한 포지션입니다.`
+      `선복량 기준으로는 ${largest.vesselName}(DWT ${formatNumber(largest.dwt)}MT)이 가장 큰 규모를 보유하고 있어, 대량 화물 장기 계약에 유리한 포지션입니다.`
     );
   }
 

@@ -92,6 +92,7 @@ export function LogoWordmark({ className, compact = false }: { className?: strin
       <span className="font-semibold">OCEAN</span>
       {!compact && (
         <>
+          {/* flex 안의 공백 텍스트는 배치에 영향이 없고, 보이는 텍스트를 "OCEAN INTELLIGENCE"로 만든다 */}{" "}
           <span aria-hidden="true" className="mx-[0.6em] h-[0.9em] w-px bg-line-strong" />
           <span className="font-normal text-fg-muted">INTELLIGENCE</span>
         </>

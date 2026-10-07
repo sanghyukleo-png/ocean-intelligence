@@ -127,9 +127,11 @@ export function scoreAllOpportunities(list: Opportunity[]): ScoredOpportunity[] 
   return [...list].map(scoreOpportunity).sort((a, b) => b.score - a.score);
 }
 
+// 표시 전용. HIGH 글자는 틴트 위 4.5:1을 넘기도록 accent-text를 쓴다.
+// HIGH(accent)와 VERY HIGH(up)는 색상이 거의 같아 보이므로 최상위 등급은 채움으로 구분한다.
 export const TIER_COLOR: Record<OpportunityTier, string> = {
   LOW: "text-score-low border-score-low/40 bg-score-low/10",
   MEDIUM: "text-score-medium border-score-medium/40 bg-score-medium/10",
-  HIGH: "text-score-high border-score-high/40 bg-score-high/10",
-  "VERY HIGH": "text-score-vhigh border-score-vhigh/40 bg-score-vhigh/10",
+  HIGH: "text-accent-text border-score-high/40 bg-score-high/10",
+  "VERY HIGH": "text-accent-ink border-score-vhigh bg-score-vhigh",
 };

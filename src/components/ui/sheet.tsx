@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,8 @@ export function Sheet({
   className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const descId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -37,6 +39,8 @@ export function Sheet({
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
+      aria-describedby={description ? descId : undefined}
       onClose={() => onOpenChange(false)}
       onClick={(e) => {
         // 배경(backdrop) 클릭 시 닫기
@@ -55,8 +59,14 @@ export function Sheet({
         {side === "bottom" && <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-line-strong" />}
         <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-fg">{title}</h2>
-            {description && <p className="mt-1 text-[0.8125rem] text-fg-muted">{description}</p>}
+            <h2 id={titleId} className="text-base font-semibold text-fg">
+              {title}
+            </h2>
+            {description && (
+              <p id={descId} className="mt-1 text-[0.8125rem] text-fg-muted">
+                {description}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -67,7 +77,11 @@ export function Sheet({
             <X size={18} strokeWidth={1.75} />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {/* 내용이 길면 스크롤된다 — 키보드로도 스크롤할 수 있게 포커스를 받는다 */}
+        <div
+          tabIndex={0}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
           {children}
         </div>
       </div>

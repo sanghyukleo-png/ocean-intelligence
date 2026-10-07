@@ -2,12 +2,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 export const badgeVariants = cva(
-  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-[3px] text-[0.6875rem] font-semibold leading-none tracking-[0.04em]",
+  "relative inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border h-5 px-2 text-[0.6875rem] font-semibold leading-none tracking-[0.04em]",
   {
     variants: {
       tone: {
-        neutral: "border-line-strong bg-subtle text-fg-muted",
-        accent: "border-accent/35 bg-accent/10 text-accent",
+        neutral: "border-line-strong bg-subtle text-fg-label",
+        accent: "border-accent/35 bg-accent/10 text-accent-text",
         up: "border-up/35 bg-up/10 text-up",
         down: "border-down/35 bg-down/10 text-down",
         warn: "border-warn/35 bg-warn/10 text-warn",
@@ -38,8 +38,9 @@ export function Badge({
 // stale  수집 실패 → 마지막 성공값을 표시 중 (실패 사유·마지막 성공 시각)
 // nokey  API 키 미설정 → 값 없음 (숨기지 않고 표시)
 // calc   사용자 입력값으로 계산
+// pending 데이터 소스 연결 전 — 값 없음 (가짜 값으로 채우지 않는다)
 // demo   시뮬레이션 — 핵심 지표에는 쓰지 않는다 (지시서 11장)
-export type DataGrade = "live" | "stale" | "nokey" | "calc" | "demo";
+export type DataGrade = "live" | "stale" | "nokey" | "pending" | "calc" | "demo";
 
 export interface DataProvenance {
   /** 출처 이름 (예: "EIA", "기상청 API허브") */
@@ -120,8 +121,8 @@ export function DataBadge({
     return (
       <Badge tone="up" dot className={className} title={title}>
         LIVE
-        {stamp && <span className="num font-medium opacity-80">{stamp}</span>}
-        {provenance.delay && <span className="font-medium opacity-80">· {provenance.delay}</span>}
+        {stamp && <span className="num font-medium">{stamp}</span>}
+        {provenance.delay && <span className="font-medium">· {provenance.delay}</span>}
         {srText}
       </Badge>
     );
@@ -131,7 +132,7 @@ export function DataBadge({
       <Badge tone="warn" dot className={className} title={title}>
         수집 실패
         {provenance.fetchedAt && (
-          <span className="num font-medium opacity-80">{formatKst(provenance.fetchedAt).slice(0, 11)} 값</span>
+          <span className="num font-medium">{formatKst(provenance.fetchedAt).slice(0, 11)} 값</span>
         )}
         {srText}
       </Badge>
@@ -141,6 +142,14 @@ export function DataBadge({
     return (
       <Badge tone="neutral" className={cn("border-dashed", className)} title={title ?? "환경변수에 API 키가 없어 수집하지 않음"}>
         API 키 미설정
+        {srText}
+      </Badge>
+    );
+  }
+  if (grade === "pending") {
+    return (
+      <Badge tone="neutral" className={cn("border-dashed", className)} title={title ?? "데이터 소스 연결 전 — 값을 표시하지 않음"}>
+        연결 예정
         {srText}
       </Badge>
     );

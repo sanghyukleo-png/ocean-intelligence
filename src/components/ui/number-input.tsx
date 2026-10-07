@@ -40,17 +40,20 @@ export function NumberInput({
   const [draft, setDraft] = useState<string | null>(null);
   const display = draft ?? formatNumberInput(value, maxFractionDigits);
 
+  // 저장값도 화면 표시 자릿수(maxFractionDigits)로 맞춘다 — 보이는 값과 계산에 쓰는 값이 달라지지 않게
+  const settle = (x: number) => clamp(Number(roundToStep(x, step).toFixed(maxFractionDigits)), min, max);
+
   function commit(next: number | null) {
     if (next === null) {
       onValueChange(null);
       return;
     }
-    onValueChange(clamp(roundToStep(next, step), min, max));
+    onValueChange(settle(next));
   }
 
   function nudge(direction: 1 | -1, multiplier: number) {
     const base = parseNumberInput(display) ?? value ?? min ?? 0;
-    const next = clamp(roundToStep(base + direction * step * multiplier, step), min, max);
+    const next = settle(base + direction * step * multiplier);
     onValueChange(next);
     if (draft !== null) setDraft(formatNumberInput(next, maxFractionDigits));
   }

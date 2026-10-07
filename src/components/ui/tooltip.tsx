@@ -80,7 +80,7 @@ export function Tooltip({
           aria-describedby={open ? id : undefined}
           aria-expanded={open}
           onClick={() => (open ? hide() : show())}
-          className="-m-1.5 inline-flex h-7 w-7 items-center justify-center rounded-full text-fg-faint transition-colors hover:text-fg"
+          className="relative -m-1.5 inline-flex h-7 w-7 items-center justify-center rounded-full text-fg-faint transition-colors after:absolute after:-inset-2 hover:text-fg md:after:hidden"
         >
           <HelpCircle size={14} strokeWidth={1.75} />
         </button>

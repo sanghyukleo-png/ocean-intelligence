@@ -46,8 +46,8 @@ export function Field({
     <FieldContext.Provider value={{ id, describedBy, invalid: Boolean(error) }}>
       <div className={cn("min-w-0", className)}>
         <div className="mb-2 flex min-h-4 items-center justify-between gap-2">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <label htmlFor={id} className="type-label truncate text-fg-muted">
+          <span className="flex min-w-0 items-center gap-2">
+            <label htmlFor={id} className="type-label truncate text-fg-label">
               {label}
             </label>
             {tip && <Tooltip content={tip} label={typeof label === "string" ? `${label} 설명` : "설명"} />}
@@ -56,11 +56,11 @@ export function Field({
         </div>
         {children}
         {error ? (
-          <p id={errorId} className="mt-1.5 text-xs text-down">
+          <p id={errorId} className="mt-2 text-xs text-down">
             {error}
           </p>
         ) : hint ? (
-          <p id={hintId} className="mt-1.5 text-xs leading-relaxed text-fg-muted">
+          <p id={hintId} className="mt-2 text-xs leading-relaxed text-fg-muted">
             {hint}
           </p>
         ) : null}
@@ -93,7 +93,7 @@ export function TextArea({ className, id, ...props }: React.ComponentProps<"text
       id={id ?? field?.id}
       aria-describedby={field?.describedBy}
       aria-invalid={field?.invalid || undefined}
-      className={cn(inputBase, "h-auto min-h-28 resize-y py-2.5 font-mono text-[0.8125rem] leading-relaxed md:h-auto", className)}
+      className={cn(inputBase, "h-auto min-h-28 resize-y py-3 font-mono text-[0.8125rem] leading-relaxed md:h-auto", className)}
       {...props}
     />
   );

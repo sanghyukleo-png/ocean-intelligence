@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { pretendard, jetbrainsMono } from "./fonts";
+import { pretendard, pretendardExt, jetbrainsMono } from "./fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
-import { NavBar } from "@/components/nav-bar";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/shell/site-header";
+import { SiteFooter } from "@/components/shell/site-footer";
+import { MobileTabBar } from "@/components/shell/mobile-tab-bar";
+import { CommandPalette } from "@/components/shell/command-palette";
 import { Backdrop } from "@/components/shell/backdrop";
 import { SpotlightTracker } from "@/components/shell/spotlight-tracker";
 import { ToastProvider } from "@/components/ui/toast";
-import { MotionProvider } from "@/components/motion/motion-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -36,7 +37,7 @@ export default function RootLayout({
       lang="ko"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${pretendard.variable} ${jetbrainsMono.variable}`}
+      className={`${pretendard.variable} ${pretendardExt.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
@@ -47,13 +48,21 @@ export default function RootLayout({
       <body className="min-h-dvh">
         <Backdrop />
         <SpotlightTracker />
-        <MotionProvider>
-          <ToastProvider>
-            <NavBar />
-            <main className="container-page py-8">{children}</main>
-            <SiteFooter />
-          </ToastProvider>
-        </MotionProvider>
+        <ToastProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-raised focus:px-4 focus:py-2 focus:text-sm focus:text-fg"
+          >
+            본문으로 건너뛰기
+          </a>
+          <SiteHeader />
+          <main id="main" className="pb-8">
+            {children}
+          </main>
+          <SiteFooter />
+          <MobileTabBar />
+          <CommandPalette />
+        </ToastProvider>
       </body>
     </html>
   );

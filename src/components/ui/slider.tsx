@@ -29,7 +29,7 @@ export function Slider({
   return (
     <div className={cn("min-w-0", className)}>
       <div className="mb-1 flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="type-label text-fg-muted">
+        <label htmlFor={id} className="type-label text-fg-label">
           {label}
         </label>
         <output htmlFor={id} className="num text-sm text-fg">
@@ -48,7 +48,7 @@ export function Slider({
         className="oi-range"
         style={{ "--pct": `${pct}%` } as React.CSSProperties}
       />
-      <div aria-hidden="true" className="num mt-0.5 flex justify-between text-[0.6875rem] text-fg-faint">
+      <div aria-hidden="true" className="num mt-1 flex justify-between text-[0.6875rem] text-fg-label">
         <span>{formatNum(min, format)}</span>
         <span>{formatNum(max, format)}</span>
       </div>

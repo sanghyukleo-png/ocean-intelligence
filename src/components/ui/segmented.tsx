@@ -75,7 +75,7 @@ export function Segmented<T extends string>({
               }
             }}
             className={cn(
-              "relative z-10 truncate rounded-md px-2.5 font-medium transition-colors duration-150",
+              "relative z-10 truncate rounded-md px-3 font-medium transition-colors duration-150",
               size === "sm" ? "text-xs" : "text-[0.8125rem]",
               active ? "text-fg" : "text-fg-muted hover:text-fg"
             )}

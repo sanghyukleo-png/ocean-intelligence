@@ -5,6 +5,15 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
 
+/* ── 폰트 스택 ─────────────────────────────────────────────────────────
+   Pretendard core(라틴 + UI에 쓰인 한글, preload) → ext(나머지 한글, unicode-range로 필요할 때만)
+   → 시스템 폰트. 구성은 app/fonts.ts, 서브셋은 scripts/subset-fonts.sh. */
+:root {
+  --font-sans-system: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    system-ui, sans-serif;
+  --font-mono-system: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
 /* ── 컬러 토큰 ─────────────────────────────────────────────────────── */
 :root,
 [data-theme="dark"] {
@@ -17,9 +26,13 @@
   --line-strong: #2a3650;
   --fg: #e8edf7;
   --fg-muted: #8a96ad;
+  /* 12px 미만 보조 텍스트(라벨·배지·캡션) 전용 — 지시서 3.1: fg-muted를 12px 미만에 쓰지 않는다 */
+  --fg-label: #a9b4c8;
   --fg-faint: #56617a; /* 장식·비활성 전용. 정보 텍스트에 쓰지 않는다 (3.2:1) */
   --accent: #4fd1c5;
   --accent-ink: #04201d;
+  /* accent 글자(작은 배지·틴트 배경 위) — 다크에서는 accent와 같다 */
+  --accent-text: #4fd1c5;
   --up: #3ddc97;
   --down: #ff6b6b;
   --warn: #f5b94a;
@@ -36,7 +49,7 @@
   --map-coast: #22304a;
   --map-contour: #111b2e;
   --map-graticule: rgb(232 237 247 / 0.035);
-  --map-label: #8a96ad;
+  --map-label: #a9b4c8;
   --map-route: var(--accent);
   --map-route-alt: #56617a;
 
@@ -62,14 +75,17 @@
   --line-strong: #c3cdda;
   --fg: #0b1220;
   --fg-muted: #4a5568;
+  --fg-label: #3d4759;
   --fg-faint: #6b7689;
   /* 지시서 값 #0E8F84는 흰 배경 대비 3.98:1로 AA 미달 → 같은 색상의 #0B7A70(5.2:1) */
   --accent: #0b7a70;
   --accent-ink: #ffffff;
-  --up: #13805a;
-  --down: #c2362f;
-  --warn: #9a6212;
-  --info: #2563b5;
+  --accent-text: #0a6e65;
+  /* 의미색은 11px 배지(10% 틴트 배경)·subtle 배경 위에서도 4.5:1 이상이 되도록 잡았다 */
+  --up: #116f4e;
+  --down: #b2322b;
+  --warn: #895710;
+  --info: #2461b1;
 
   --highlight: rgb(255 255 255 / 0.9);
   --grid-line: rgb(11 18 32 / 0.05);
@@ -81,7 +97,7 @@
   --map-coast: #b9c5d4;
   --map-contour: #dbe4ee;
   --map-graticule: rgb(11 18 32 / 0.05);
-  --map-label: #4a5568;
+  --map-label: #3d4759;
   --map-route: var(--accent);
   --map-route-alt: #8a96ad;
 
@@ -107,19 +123,21 @@
     --line-strong: #c3cdda;
     --fg: #0b1220;
     --fg-muted: #4a5568;
+    --fg-label: #3d4759;
     --fg-faint: #6b7689;
     --accent: #0b7a70;
     --accent-ink: #ffffff;
-    --up: #13805a;
-    --down: #c2362f;
-    --warn: #9a6212;
-    --info: #2563b5;
+    --accent-text: #0a6e65;
+    --up: #116f4e;
+    --down: #b2322b;
+    --warn: #895710;
+    --info: #2461b1;
     --map-sea: #e8eef5;
     --map-land: #ffffff;
     --map-coast: #b9c5d4;
     --map-contour: #dbe4ee;
     --map-graticule: rgb(11 18 32 / 0.05);
-    --map-label: #4a5568;
+    --map-label: #3d4759;
     --map-route: var(--accent);
     --map-route-alt: #8a96ad;
 
@@ -143,9 +161,11 @@
   --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
+  --color-fg-label: var(--fg-label);
   --color-fg-faint: var(--fg-faint);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-warn: var(--warn);
@@ -163,26 +183,15 @@
   --color-risk-4: var(--risk-4);
   --color-vessel-ais: var(--vessel-ais);
   --color-vessel-sim: var(--vessel-sim);
-
-  /* 기존 페이지 호환 별칭 — Phase 2에서 페이지를 옮기면서 제거한다 */
-  --color-background: var(--bg);
-  --color-surface: var(--bg-raised);
-  --color-surface-2: var(--bg-subtle);
-  --color-border: var(--line);
-  --color-foreground: var(--fg);
-  --color-muted: var(--fg-muted);
-  --color-accent-dim: color-mix(in oklab, var(--accent) 16%, transparent);
-  --color-positive: var(--up);
-  --color-negative: var(--down);
-  --color-warning: var(--warn);
+  /* 조선 영업기회 점수 등급 */
   --color-score-low: var(--fg-muted);
   --color-score-medium: var(--info);
   --color-score-high: var(--accent);
   --color-score-vhigh: var(--up);
 
-  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, -apple-system,
-    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --font-sans: var(--font-pretendard), var(--font-pretendard-ext), var(--font-sans-system);
+  --font-mono: var(--font-jetbrains), var(--font-mono-system);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
@@ -237,11 +246,6 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums slashed-zero;
 }
-/* 기존 클래스 호환 */
-@utility font-mono-num {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums slashed-zero;
-}
 
 /* 컨테이너: 1440 + 유동 여백 */
 @utility container-page {
@@ -279,7 +283,9 @@
     font-size: 0.9375rem;
     line-height: 1.6;
     word-break: keep-all;
-    overflow-wrap: anywhere;
+    /* 지시서 3.2는 anywhere이지만, anywhere는 min-content 폭까지 줄여 좁은 표·플렉스에서
+       한글 단어를 중간에서 끊는다. break-word는 넘칠 때만 끊는다(QA: 단어 중간 줄바꿈 없음). */
+    overflow-wrap: break-word;
     text-wrap: pretty;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -297,8 +303,7 @@
   textarea,
   pre,
   code,
-  .num,
-  .font-mono-num {
+  .num {
     overflow-wrap: normal;
     word-break: normal;
   }
@@ -398,7 +403,7 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 24px;
+  height: 44px; /* 모바일 터치 타깃 */
   background: transparent;
   cursor: pointer;
   --pct: 50%;
@@ -437,12 +442,73 @@
   background: var(--fg);
   border: 3px solid var(--accent);
 }
-.oi-range:hover::-webkit-slider-thumb,
-.oi-range:focus-visible::-webkit-slider-thumb {
+.oi-range:hover::-webkit-slider-thumb {
   box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+/* 키보드 포커스는 호버와 구분되는 2px 링(배경 간격 + accent) — WCAG 1.4.11 */
+.oi-range:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 2px var(--bg-raised),
+    0 0 0 4px var(--accent);
+}
+.oi-range:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 2px var(--bg-raised),
+    0 0 0 4px var(--accent);
 }
 .oi-range:focus-visible {
   outline: none;
+}
+@media (min-width: 768px) {
+  .oi-range {
+    height: 24px;
+  }
+}
+
+/* ── 고정 막대에 포커스가 가려지지 않게 (WCAG 2.4.11): 상단 헤더 64px, 하단 탭 56px(md 미만),
+      계산기 요약 바(lg 미만) ── */
+html {
+  scroll-padding-top: calc(64px + 1rem);
+}
+@media (max-width: 767.98px) {
+  html {
+    scroll-padding-bottom: calc(56px + 1rem + env(safe-area-inset-bottom));
+  }
+  html:has([data-mobile-summary]) {
+    scroll-padding-bottom: calc(56px + 5rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  html:has([data-mobile-summary]) {
+    scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── 계산기 모바일 요약 바: 하단 탭(56px, md 미만) 위에 고정 — 푸터가 가려지지 않게 여백 확보,
+      토스트는 요약 바 위로 올린다 ── */
+@media (max-width: 767.98px) {
+  body:has([data-mobile-summary]) footer {
+    padding-bottom: calc(56px + 5rem + env(safe-area-inset-bottom));
+  }
+  body:has([data-mobile-summary]) [data-toast-region] {
+    bottom: calc(56px + 5rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  body:has([data-mobile-summary]) footer {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  body:has([data-mobile-summary]) [data-toast-region] {
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── 가로 스크롤 단서: 오른쪽에 내용이 더 있을 때만 그림자 (CSS만) ── */
+@utility scroll-shade-x {
+  background:
+    linear-gradient(var(--bg-raised), var(--bg-raised)) right center / 24px 100% no-repeat local,
+    linear-gradient(to left, color-mix(in oklab, var(--fg) 12%, transparent), transparent) right center / 24px 100% no-repeat scroll,
+    var(--bg-raised);
 }
 
 /* ── 공제 구간 빗금 (Laytime 타임라인 등) ────────────────────────── */
@@ -477,36 +543,119 @@
   animation: oi-shimmer 1.4s var(--ease-out-expo) infinite;
 }
 
-/* 기존 페이지 호환 (Phase 2에서 Reveal 컴포넌트로 교체) */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-fade-in-up {
-  animation: fade-in-up 480ms var(--ease-out-expo) both;
-}
-
 /* ── 스크롤바 ─────────────────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
 }
 
-/* ── 페이지 전환 (View Transitions) ─────────────────────────────── */
+/* ── 셸 진입 애니메이션 ─────────────────────────────────────────── */
+@keyframes oi-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes oi-menu-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ── 홈 첫 진입 시퀀스 (지시서 3.6, 총 1.4s 이내) ──────────────────
+   0ms 배경 → 120ms 헤더 → 200ms 제목 줄 리빌(40ms 간격) → 500ms 해안선 드로잉(900ms)
+   → 700ms 티커·도구 스트립(40ms 간격) → 760ms 초크포인트 칩 → 800ms 육지 → 900ms CTA·국내항 스트립.
+   모든 요소가 1.4s 안에 끝난다. CSS만 사용(초기 JS 0). */
+.intro-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.intro-line {
+  display: block;
+  animation: oi-rise 720ms var(--ease-out-expo) both;
+  animation-delay: calc(200ms + var(--i, 0) * 40ms);
+}
+@keyframes oi-rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+.intro-fade {
+  animation: oi-fade-up 480ms var(--ease-out-expo) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes oi-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.intro-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: oi-draw 900ms var(--ease-out-expo) 500ms forwards;
+}
+@keyframes oi-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.intro-land {
+  animation: oi-fade-in 600ms var(--ease-out-expo) 800ms both;
+}
+.backdrop {
+  animation: oi-fade-in 400ms linear both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-draw {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── 스크롤 리빌 (Reveal · Stagger, 지시서 3.6: 12px 상승 + 페이드, 형제 60ms, 1회) ──
+   IntersectionObserver가 data-shown을 붙인다(components/motion/reveal.tsx). */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 480ms var(--ease-out-expo),
+    transform 480ms var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal][data-shown],
+[data-stagger][data-shown] > [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+[data-stagger] > [data-reveal] {
+  transition-delay: calc(var(--stagger-delay, 0ms) + var(--i, 0) * 60ms);
+}
+[data-stagger] > :nth-child(2) { --i: 1; }
+[data-stagger] > :nth-child(3) { --i: 2; }
+[data-stagger] > :nth-child(4) { --i: 3; }
+[data-stagger] > :nth-child(5) { --i: 4; }
+[data-stagger] > :nth-child(6) { --i: 5; }
+[data-stagger] > :nth-child(7) { --i: 6; }
+[data-stagger] > :nth-child(8) { --i: 7; }
+[data-stagger] > :nth-child(9) { --i: 8; }
+[data-stagger] > :nth-child(10) { --i: 9; }
+[data-stagger] > :nth-child(n + 11) { --i: 10; }
+
+/* ── 페이지 전환 (React <ViewTransition>, 지시서 3.6) ───────────── */
 ::view-transition {
   pointer-events: none;
 }
-::view-transition-old(root) {
+::view-transition-old(.oi-page-out) {
   animation: 160ms var(--ease-in-expo) both oi-vt-out;
 }
-::view-transition-new(root) {
-  animation: 320ms var(--ease-out-expo) both oi-vt-in;
+::view-transition-new(.oi-page-in) {
+  animation: 320ms var(--ease-out-expo) 60ms both oi-vt-in;
 }
 @keyframes oi-vt-out {
   to {
@@ -519,6 +668,17 @@
     transform: translateY(8px);
   }
 }
+/* 헤더는 전환 중 고정 */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
 
 /* ── 모션 축소 ────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -526,6 +686,7 @@
   ::before,
   ::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
@@ -538,7 +699,7 @@
   .oi-skeleton::after {
     display: none;
   }
-  /* 모션 컴포넌트의 인라인 초기값(opacity 0, translateY)을 무시하고 즉시 표시 */
+  /* 스크롤 리빌 대상은 즉시 표시 */
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;
@@ -558,14 +719,25 @@
     --line-strong: #aab6c6;
     --fg: #000000;
     --fg-muted: #3c4656;
+    --fg-label: #2f3846;
     --fg-faint: #6b7689;
     --accent: #0b7a70;
     --accent-ink: #ffffff;
+    --accent-text: #0a6e65;
+    --up: #116f4e;
+    --down: #b2322b;
+    --warn: #895710;
+    --info: #2461b1;
     --highlight: transparent;
   }
   .backdrop,
   [data-print-hidden] {
     display: none !important;
+  }
+  /* 스크롤하지 않은 영역도 인쇄되게 */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
   @page {
     size: A4;

@@ -22,17 +22,20 @@ export function CardHeader({
   title,
   description,
   actions,
+  as: Heading = "h3",
   className,
 }: {
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
+  /** 제목 레벨 — 페이지 최상위 카드는 h2로 두어 h1 → h2 순서를 지킨다 */
+  as?: "h2" | "h3";
   className?: string;
 }) {
   return (
     <div className={cn("mb-4 flex items-start justify-between gap-3", className)}>
       <div className="min-w-0">
-        <h3 className="text-[0.9375rem] font-semibold leading-snug text-fg">{title}</h3>
+        <Heading className="text-[0.9375rem] font-semibold leading-snug text-fg">{title}</Heading>
         {description && <p className="mt-1 text-[0.8125rem] leading-relaxed text-fg-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
@@ -41,5 +44,5 @@ export function CardHeader({
 }
 
 export function CardLabel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("type-label text-fg-muted", className)} {...props} />;
+  return <div className={cn("type-label text-fg-label", className)} {...props} />;
 }

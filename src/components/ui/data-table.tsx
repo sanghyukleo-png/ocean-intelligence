@@ -78,7 +78,7 @@ export function DataTable<T>({
 
   return (
     <div
-      className={cn("overflow-auto rounded-xl border border-line bg-raised", className)}
+      className={cn("scroll-shade-x relative overflow-auto rounded-xl border border-line bg-raised", className)}
       style={maxHeight ? { maxHeight } : undefined}
       tabIndex={0}
       role="region"
@@ -110,8 +110,8 @@ export function DataTable<T>({
                       type="button"
                       onClick={() => toggle(col.key)}
                       className={cn(
-                        "type-label inline-flex items-center gap-1 rounded-sm transition-colors hover:text-fg",
-                        active ? "text-fg" : "text-fg-muted",
+                        "type-label inline-flex min-h-11 items-center gap-1 rounded-sm transition-colors hover:text-fg md:min-h-0",
+                        active ? "text-fg" : "text-fg-label",
                         col.numeric && "flex-row-reverse"
                       )}
                     >
@@ -119,7 +119,7 @@ export function DataTable<T>({
                       <Icon size={12} strokeWidth={2} aria-hidden="true" className={active ? "text-accent" : "opacity-50"} />
                     </button>
                   ) : (
-                    <span className="type-label text-fg-muted">{col.header}</span>
+                    <span className="type-label text-fg-label">{col.header}</span>
                   )}
                 </th>
               );

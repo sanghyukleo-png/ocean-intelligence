@@ -54,8 +54,14 @@ const FIELD_SPECS: FieldSpec[] = [
   { key: "cargoCapacity", label: "화물창 용량", pattern: /Cargo Capacity:\s*([\d,]+)/i, kind: "number" },
 ];
 
+/**
+ * 숫자 문자열 → 수. 숫자가 하나도 없으면(예: 패턴 [\d,]+가 쉼표만 잡은 경우) NaN을 돌려준다.
+ * Number("")는 0이므로 그대로 두면 빈 값이 '0'으로 둔갑해 신뢰도 95%로 채워진다.
+ */
 function toNumber(raw: string): number {
-  return Number(raw.replace(/,/g, "").trim());
+  const cleaned = raw.replace(/,/g, "").trim();
+  if (!/\d/.test(cleaned)) return Number.NaN;
+  return Number(cleaned);
 }
 
 export function extractVesselFromText(text: string): VesselExtractionResult {
