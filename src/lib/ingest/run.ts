@@ -17,12 +17,44 @@ export type RunOutcome =
   | { sourceId: string; status: "unavailable"; reason: string };
 
 /** 저장 전 값 검증. 문제가 있으면 사유, 없으면 null */
-export function validateObservation(prev: Observation | null, next: Observation): string | null {
+export function validateObservation(prev: Observation | null, next: Observation, maxJump = MAX_JUMP): string | null {
   if (!Number.isFinite(next.value) || next.value <= 0) return `${next.metric} ${next.asOf}: 0 이하이거나 숫자가 아님`;
-  if (prev && Math.abs(next.value / prev.value - 1) >= MAX_JUMP) {
-    return `${next.metric} ${next.asOf}: 직전(${prev.asOf}) ${prev.value} 대비 ${(((next.value / prev.value) - 1) * 100).toFixed(1)}% — ±${MAX_JUMP * 100}% 이상 변동이라 저장하지 않음`;
+  if (prev && Math.abs(next.value / prev.value - 1) >= maxJump) {
+    return `${next.metric} ${next.asOf}: 직전(${prev.asOf}) ${prev.value} 대비 ${(((next.value / prev.value) - 1) * 100).toFixed(1)}% — ±${Math.round(maxJump * 100)}% 이상 변동이라 저장하지 않음`;
   }
   return null;
+}
+
+/**
+ * 한 시계열(오래된 순)을 검증한다.
+ * 급변 값은 일단 보류하고, 바로 다음 값이 보류 값과 허용 범위 안이면 수준 변화가 확인된 것으로 보고 둘 다 받는다
+ * (한 번 거른 값 때문에 이후 값이 계속 거부되는 것을 막는다). 마지막 값이 보류로 끝나면 latestRejected=true.
+ */
+export function validateSeries(stored: Observation | null, list: Observation[], maxJump = MAX_JUMP) {
+  const accepted: Observation[] = [];
+  const rejected: string[] = [];
+  let prev = stored;
+  let pending: { obs: Observation; reason: string } | null = null;
+  for (const o of list) {
+    const problem = validateObservation(prev, o, maxJump);
+    if (!problem) {
+      if (pending) rejected.push(pending.reason);
+      pending = null;
+      accepted.push(o);
+      prev = o;
+      continue;
+    }
+    if (pending && !validateObservation(pending.obs, o, maxJump)) {
+      accepted.push(pending.obs, o);
+      prev = o;
+      pending = null;
+      continue;
+    }
+    if (pending) rejected.push(pending.reason);
+    pending = { obs: o, reason: problem };
+  }
+  if (pending) rejected.push(pending.reason);
+  return { accepted, rejected, latestRejected: pending !== null };
 }
 
 /** 다음 수집 가능 시각. null이면 지금 가능 */
@@ -78,6 +110,7 @@ async function runSourceInner(def: SourceDef, { store, env = process.env, now = 
 
     const accepted: Observation[] = [];
     const rejected: string[] = [];
+    let latestRejected = false;
     const groups = new Map<string, Observation[]>();
     // 저장 키는 소스 id — 표시용 이름은 SourceDef.label
     for (const raw of result.observations ?? []) {
@@ -88,21 +121,17 @@ async function runSourceInner(def: SourceDef, { store, env = process.env, now = 
     for (const list of groups.values()) {
       list.sort((a, b) => a.asOf.localeCompare(b.asOf));
       const stored = await store.recent(list[0].metric, list[0].source, 10);
-      let prev: Observation | null = stored.find((s) => s.asOf < list[0].asOf) ?? null;
-      for (const o of list) {
-        const problem = validateObservation(prev, o);
-        if (problem) {
-          rejected.push(problem);
-          continue;
-        }
-        accepted.push(o);
-        prev = o;
-      }
+      const before = stored.find((s) => s.asOf < list[0].asOf) ?? null;
+      const r = validateSeries(before, list, def.maxJump);
+      accepted.push(...r.accepted);
+      rejected.push(...r.rejected);
+      latestRejected ||= r.latestRejected;
     }
-    if (result.observations?.length && !accepted.length) throw new SourceError("invalid", rejected.join(" / "));
 
     await store.putObservations(accepted);
     for (const s of result.snapshots ?? []) await store.putSnapshot(s);
+    // 최신 값이 검증에서 걸렸으면 앞선 값은 저장하되 실패로 기록 → 화면은 "수집 실패 · 마지막 성공값"
+    if (latestRejected || (result.observations?.length && !accepted.length)) throw new SourceError("invalid", rejected.join(" / "));
 
     const warnings = [...rejected, ...(result.warnings ?? [])];
     if (rejected.length) console.warn(`[ingest] ${def.id} 검증 제외 ${rejected.length}건:`, rejected.join(" / "));

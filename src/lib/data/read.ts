@@ -26,11 +26,11 @@ export interface MetricDef {
 export const METRICS: MetricDef[] = [
   { id: "brent", label: "Brent", unit: "$/bbl", decimals: 2, sources: ["eia"] },
   { id: "wti", label: "WTI", unit: "$/bbl", decimals: 2, sources: ["eia"] },
-  { id: "dubai", label: "Dubai", unit: "$/bbl", decimals: 2, sources: ["dubai"] },
+  // 일간 Dubai는 Platts라 수집 금지 → IMF 월평균을 "월평균"으로 명시(사용자 결정 2026-10-08)
+  { id: "dubai", label: "Dubai 월평균", unit: "$/bbl", decimals: 2, sources: ["imf-pcps"] },
   { id: "usdkrw", label: "USD/KRW", unit: "원", decimals: 2, sources: ["koreaexim", "ecos", "frankfurter-ecb"] },
-  { id: "vlsfo-sg", label: "VLSFO 싱가포르", unit: "$/MT", decimals: 0, sources: ["bunker"] },
-  { id: "vlsfo-busan", label: "VLSFO 부산", unit: "$/MT", decimals: 0, sources: ["bunker"] },
-  { id: "scfi", label: "SCFI", unit: "pt", decimals: 0, sources: ["scfi"] },
+  { id: "scfi", label: "SCFI", unit: "pt", decimals: 2, sources: ["sse-scfi"] },
+  { id: "kcci", label: "KCCI", unit: "pt", decimals: 0, sources: ["kobc-kcci"] },
 ];
 
 export interface MetricReading {
@@ -50,7 +50,7 @@ function provenanceOf(def: SourceDef, o: Observation | null, extra: Partial<Data
     source: def.label,
     sourceUrl: def.sourceUrl,
     cadence: def.cadence,
-    ...(o ? { asOf: o.asOfPrecision === "day" ? o.asOf.slice(0, 10) : o.asOf, asOfPrecision: o.asOfPrecision, fetchedAt: o.fetchedAt } : {}),
+    ...(o ? { asOf: o.asOf, asOfPrecision: o.asOfPrecision, fetchedAt: o.fetchedAt } : {}),
     ...extra,
   };
 }

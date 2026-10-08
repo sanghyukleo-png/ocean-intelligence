@@ -20,7 +20,7 @@ export function LiveMetricTile({ def, reading }: { def: MetricDef; reading: Metr
         delta={reading.changePct}
         deltaFormat={{ decimals: 2, suffix: "%", signed: true }}
         positiveIsGood={null}
-        hint={reading.changePct !== null ? "직전 발표 대비" : undefined}
+        hint={reading.changePct !== null ? (reading.provenance.asOfPrecision === "month" ? "전월 대비" : "직전 발표 대비") : undefined}
         badge={<DataBadge grade={reading.grade} {...reading.provenance} />}
       />
       {series.length >= 3 && (

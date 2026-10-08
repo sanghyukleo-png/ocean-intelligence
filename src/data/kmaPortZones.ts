@@ -10,7 +10,9 @@
 // 4) 중기해상예보 구역: 중기예보 조회서비스 활용가이드(241128)의 중기해상예보구역 코드표.
 //    앞바다의 상위 "○○전해상" 이름과 같은 해역 코드를 대응시켰다(예: 동해남부전해상 → 12C10000 동해남부).
 // 5) 좌표: UN/LOCODE(2024-2 판, datasets/un-locode 미러) — 분 단위 대표 좌표로 지도 표시용. 부두·묘박지 위치가 아니다.
-// 6) 관할 기관: 각 지방해양수산청 누리집(2026-10-08 접속 확인). 제주는 지방해양수산청이 없어 비워 둔다.
+// 6) 단기 해상예보 구역(예보구역코드): 공공데이터포털 「기상청_예보구역정보 조회서비스」 활용가이드(240715) 해상국지 코드
+//    — 날씨누리 해상 단기예보 화면의 구역 목록과 대조(2026-10-08). API허브 단기 해상예보 연결 시 이 코드로 조회한다.
+// 7) 관할 기관: 각 지방해양수산청 누리집(2026-10-08 접속 확인). 제주는 지방해양수산청이 없어 비워 둔다.
 //
 // 항만별 실제 입출항 통제 기준(운영세칙·VTS 고시)은 확인된 것이 없어 넣지 않는다 → 화면에 "항만별 기준 확인 필요".
 
@@ -26,6 +28,8 @@ export interface PortZoneDef {
   zones: string[];
   /** 중기해상예보 구역 코드 */
   midSeaRegId: string;
+  /** 단기 해상예보 구역 코드(해상국지 앞바다) */
+  shortSeaRegIds: string[];
   authority: { name: string; url: string } | null;
 }
 
@@ -38,6 +42,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [129.317, 35.533], // USN 3532N 12919E (ONS 3526N 12921E)
     zones: ["S1131100", "S2110200", "S2120400"],
     midSeaRegId: "12C10000",
+    shortSeaRegIds: ["12C10101"],
     authority: { name: "울산지방해양수산청", url: "https://ulsan.mof.go.kr/" },
   },
   {
@@ -48,6 +53,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [127.717, 34.75], // YOS 3445N 12743E (KAN 3456N 12742E)
     zones: ["S1321200", "S2310800", "S2310900"],
     midSeaRegId: "12B10000",
+    shortSeaRegIds: ["12B10102"],
     authority: { name: "여수지방해양수산청", url: "https://yeosu.mof.go.kr/" },
   },
   {
@@ -58,6 +64,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [126.367, 37.0], // TSN 3700N 12622E
     zones: ["S1251300", "S2212200"],
     midSeaRegId: "12A20000",
+    shortSeaRegIds: ["12A20103"],
     authority: { name: "대산지방해양수산청", url: "https://daesan.mof.go.kr/" },
   },
   {
@@ -68,6 +75,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [126.617, 37.45], // INC 3727N 12637E
     zones: ["S1251200", "S2211100", "S2211600", "S2211700"],
     midSeaRegId: "12A20000",
+    shortSeaRegIds: ["12A20102"],
     authority: { name: "인천지방해양수산청", url: "https://incheon.mof.go.kr/" },
   },
   {
@@ -79,6 +87,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     // 평택은 인천·경기남부앞바다, 당진은 충남북부앞바다 — 두 구역 중 높은 등급을 쓴다
     zones: ["S1251200", "S1251300", "S2212100"],
     midSeaRegId: "12A20000",
+    shortSeaRegIds: ["12A20102", "12A20103"],
     authority: { name: "평택지방해양수산청", url: "https://pyeongtaek.mof.go.kr/" },
   },
   {
@@ -89,6 +98,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [129.05, 35.133], // PUS 3508N 12903E
     zones: ["S1311100", "S2310100", "S2310200", "S2320100"],
     midSeaRegId: "12B20000",
+    shortSeaRegIds: ["12B20103"],
     authority: { name: "부산지방해양수산청", url: "https://busan.mof.go.kr/" },
   },
   {
@@ -99,6 +109,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [129.367, 36.033], // KPO 3602N 12922E
     zones: ["S1131200", "S2110100", "S2120300"],
     midSeaRegId: "12C10000",
+    shortSeaRegIds: ["12C10102"],
     authority: { name: "포항지방해양수산청", url: "https://pohang.mof.go.kr/" },
   },
   {
@@ -109,6 +120,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [126.717, 35.983], // KUV 3559N 12643E
     zones: ["S1231100", "S2210100"],
     midSeaRegId: "12A30000",
+    shortSeaRegIds: ["22A30101"],
     authority: { name: "군산지방해양수산청", url: "https://gunsan.mof.go.kr/" },
   },
   {
@@ -119,6 +131,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [126.383, 34.8], // MOK 3448N 12623E
     zones: ["S1231400", "S2211300", "S2211400"],
     midSeaRegId: "12A30000",
+    shortSeaRegIds: ["22A30104"],
     authority: { name: "목포지방해양수산청", url: "https://mokpo.mof.go.kr/" },
   },
   {
@@ -129,6 +142,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [128.567, 35.2], // MAS 3512N 12834E
     zones: ["S1311300", "S2310300", "S2320800"],
     midSeaRegId: "12B20000",
+    shortSeaRegIds: ["12B20102"],
     authority: { name: "마산지방해양수산청", url: "https://masan.mof.go.kr/" },
   },
   {
@@ -139,6 +153,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [129.117, 37.483], // TGH 3729N 12907E (MUK 3732N 12906E)
     zones: ["S1151300", "S2120700"],
     midSeaRegId: "12C20000",
+    shortSeaRegIds: ["12C20101"],
     authority: { name: "동해지방해양수산청", url: "https://donghae.mof.go.kr/" },
   },
   {
@@ -149,6 +164,7 @@ export const KMA_PORTS: PortZoneDef[] = [
     coord: [126.517, 33.5], // CHA 3330N 12631E
     zones: ["S1323100", "S2320400"],
     midSeaRegId: "12B10500",
+    shortSeaRegIds: ["12B10302"],
     authority: null,
   },
 ];

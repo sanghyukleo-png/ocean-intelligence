@@ -19,7 +19,8 @@ export interface TickerItem {
   positiveIsGood: boolean | null;
 }
 
-const ORDER = ["brent", "dubai", "usdkrw", "vlsfo-sg", "vlsfo-busan", "scfi"] as const;
+// 지시서 11.5 순서에서 벙커유는 수집하지 않기로 해 빠지고(2026-10-08), 국내 공공 운임지수 KCCI를 SCFI 옆에 둔다(11.1)
+const ORDER = ["brent", "dubai", "usdkrw", "scfi", "kcci"] as const;
 
 export async function getTickerItems(store: DataStore, env: Record<string, string | undefined> = process.env): Promise<TickerItem[]> {
   const readings = await Promise.all(ORDER.map((id) => readMetric(store, id, env, 2)));

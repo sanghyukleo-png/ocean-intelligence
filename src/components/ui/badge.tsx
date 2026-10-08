@@ -38,9 +38,10 @@ export function Badge({
 // stale  수집 실패 → 마지막 성공값을 표시 중 (실패 사유·마지막 성공 시각)
 // nokey  API 키 미설정 → 값 없음 (숨기지 않고 표시)
 // calc   사용자 입력값으로 계산
+// input  사용자가 직접 입력한 시세(벙커가 등 — 수집하지 않는 값). 입력 기준일·출처 메모와 함께
 // pending 데이터 소스 연결 전 — 값 없음 (가짜 값으로 채우지 않는다)
 // demo   시뮬레이션 — 핵심 지표에는 쓰지 않는다 (지시서 11장)
-export type DataGrade = "live" | "stale" | "nokey" | "pending" | "calc" | "demo";
+export type DataGrade = "live" | "stale" | "nokey" | "pending" | "calc" | "input" | "demo";
 
 export interface DataProvenance {
   /** 출처 이름 (예: "EIA", "기상청 API허브") */
@@ -48,8 +49,8 @@ export interface DataProvenance {
   sourceUrl?: string;
   /** 원천 기준 시각 — 원천이 값을 발표·기준한 시각 */
   asOf?: string | Date;
-  /** "day"면 원천이 날짜만 준 값(일간 종가·고시) — 시각을 지어내지 않고 날짜만 표시 */
-  asOfPrecision?: "day" | "minute";
+  /** "day"면 원천이 날짜만 준 값(일간 종가·고시), "month"면 월 값(월평균) — 시각을 지어내지 않는다 */
+  asOfPrecision?: "month" | "day" | "minute";
   /** 우리 서버가 수집한 시각 */
   fetchedAt?: string | Date;
   /** 발표 주기 (예: "주 1회 · 금", "장중 연속", "일 1회") */
@@ -95,6 +96,7 @@ function isToday(at: string | Date | undefined) {
 /** 원천 기준 시각 표기 — 날짜만 있는 값은 "10.07", 시각이 있으면 "10.07 14:30" */
 export function formatAsOf(p: Pick<DataProvenance, "asOf" | "asOfPrecision">) {
   if (!p.asOf) return "";
+  if (p.asOfPrecision === "month" && typeof p.asOf === "string") return `${p.asOf.slice(0, 4)}.${p.asOf.slice(5, 7)}`;
   if (p.asOfPrecision === "day" && typeof p.asOf === "string") return `${p.asOf.slice(5, 7)}.${p.asOf.slice(8, 10)}`;
   return formatKst(p.asOf);
 }
@@ -103,7 +105,10 @@ export function formatAsOf(p: Pick<DataProvenance, "asOf" | "asOfPrecision">) {
 export function provenanceLines(grade: DataGrade, p: DataProvenance = {}) {
   const lines: string[] = [];
   if (p.source) lines.push(`출처 ${p.source}`);
-  if (p.asOf) lines.push(p.asOfPrecision === "day" ? `원천 기준일 ${formatAsOf(p)}` : `원천 기준 ${formatKst(p.asOf)} KST`);
+  if (p.asOf)
+    lines.push(
+      p.asOfPrecision === "month" ? `원천 기준월 ${formatAsOf(p)}` : p.asOfPrecision === "day" ? `원천 기준일 ${formatAsOf(p)}` : `원천 기준 ${formatKst(p.asOf)} KST`
+    );
   if (p.fetchedAt) lines.push(`${grade === "stale" ? "마지막 성공 수집" : "수집"} ${formatKst(p.fetchedAt)} KST`);
   if (p.cadence) lines.push(`발표 주기 ${p.cadence}`);
   if (p.delay) lines.push(p.delay);
@@ -123,7 +128,7 @@ export function DataBadge({
   if (grade === "live") {
     // 배지에는 원천 기준 시각을 짧게(오늘이면 시:분, 아니면 월.일)
     const stamp = provenance.asOf
-      ? provenance.asOfPrecision === "day"
+      ? provenance.asOfPrecision === "day" || provenance.asOfPrecision === "month"
         ? formatAsOf(provenance)
         : isToday(provenance.asOf)
           ? formatKst(provenance.asOf, false)
@@ -161,6 +166,14 @@ export function DataBadge({
     return (
       <Badge tone="neutral" className={cn("border-dashed", className)} title={title ?? "데이터 소스 연결 전 — 값을 표시하지 않음"}>
         연결 예정
+        {srText}
+      </Badge>
+    );
+  }
+  if (grade === "input") {
+    return (
+      <Badge tone="info" className={cn("border-dashed", className)} title={title ?? "사용자가 직접 입력한 값 — 수집하지 않음"}>
+        직접 입력
         {srText}
       </Badge>
     );

@@ -4,8 +4,8 @@
 create table if not exists public.observations (
   metric           text        not null,
   source           text        not null,
-  as_of            text        not null,          -- 원천 기준 시각(ISO) 또는 날짜(YYYY-MM-DD)
-  as_of_precision  text        not null check (as_of_precision in ('day', 'minute')),
+  as_of            text        not null,          -- 원천 기준 시각(ISO)·날짜(YYYY-MM-DD)·월(YYYY-MM)
+  as_of_precision  text        not null check (as_of_precision in ('month', 'day', 'minute')),
   value            double precision not null,
   unit             text        not null,
   fetched_at       timestamptz not null,

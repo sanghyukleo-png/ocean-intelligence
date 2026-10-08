@@ -1,0 +1,56 @@
+{
+ "data": {
+  "currentDate": "2026-09-30",
+  "lastDate": "2026-09-24",
+  "lineDataList": [
+   {
+    "properties": {
+     "weighting_EN": "",
+     "unit_ZH": "",
+     "lineName_ZH": "上海出口集装箱运价指数",
+     "lineName_EN": "Comprehensive Index",
+     "weighting_ZH": "",
+     "unit_EN": ""
+    },
+    "currentContent": 3662.2965,
+    "lastContent": 3686.6165,
+    "absolute": -24.32,
+    "percentage": -0.6597,
+    "dataItemTypeName": "SCFI_T"
+   },
+   {
+    "properties": {
+     "weighting_EN": "20.0%",
+     "unit_ZH": "USD/TEU",
+     "lineName_ZH": "欧洲 20ft（基本港）Europe 20ft (Base port)",
+     "lineName_EN": "Europe 20ft (Base port)",
+     "weighting_ZH": "20.0%",
+     "unit_EN": "USD/TEU"
+    },
+    "currentContent": null,
+    "lastContent": null,
+    "absolute": null,
+    "percentage": null,
+    "dataItemTypeName": "SCFI_L1"
+   },
+   {
+    "properties": {
+     "weighting_EN": "0.0%",
+     "unit_ZH": "USD/FEU",
+     "lineName_ZH": "欧洲 40ft（基本港）Europe 40ft (Base port)",
+     "lineName_EN": "Europe 40ft (Base port)",
+     "weighting_ZH": "0.0%",
+     "unit_EN": "USD/FEU"
+    },
+    "currentContent": null,
+    "lastContent": null,
+    "absolute": null,
+    "percentage": null,
+    "dataItemTypeName": "SCFI_L27"
+   }
+  ],
+  "display": null
+ },
+ "msg": "Successfully obtained index data ！",
+ "status": 1
+}

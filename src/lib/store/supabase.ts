@@ -50,7 +50,7 @@ export function createSupabaseStore({ url, key, fresh, fetch: f = fetch }: Opts)
       );
     },
     async recent(metric, source, limit) {
-      type Row = { metric: string; source: string; as_of: string; as_of_precision: "day" | "minute"; value: number; unit: string; fetched_at: string; source_url: string };
+      type Row = { metric: string; source: string; as_of: string; as_of_precision: Observation["asOfPrecision"]; value: number; unit: string; fetched_at: string; source_url: string };
       const rows = await get<Row[]>(`observations?metric=eq.${enc(metric)}&source=eq.${enc(source)}&order=as_of.desc&limit=${limit}`);
       return rows.map(
         (r): Observation => ({ metric: r.metric, source: r.source, asOf: r.as_of, asOfPrecision: r.as_of_precision, value: Number(r.value), unit: r.unit, fetchedAt: r.fetched_at, sourceUrl: r.source_url })

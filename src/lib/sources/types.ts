@@ -6,9 +6,9 @@ export interface Observation {
   metric: string;
   value: number;
   unit: string;
-  /** 원천 기준 시각(ISO). 원천이 날짜만 주면 "YYYY-MM-DD" 그대로 두고 asOfPrecision="day" */
+  /** 원천 기준 시각(ISO). 날짜만 주면 "YYYY-MM-DD"(day), 월 값이면 "YYYY-MM"(month) 그대로 둔다 */
   asOf: string;
-  asOfPrecision: "day" | "minute";
+  asOfPrecision: "month" | "day" | "minute";
   /** 우리 서버 수집 시각(ISO) */
   fetchedAt: string;
   source: string;
@@ -100,6 +100,8 @@ export interface SourceDef {
   cadence: string;
   /** 성공 후 다음 수집까지 최소 간격(초) */
   minIntervalSec: number;
+  /** 직전 대비 허용 변동(비율). 기본 0.3(지시서 11.2 예시값) */
+  maxJump?: number;
   /** 실패 후 재시도 최소 간격(초) */
   retryIntervalSec: number;
   /** 마지막 성공이 이 시간보다 오래되면 "지연" */

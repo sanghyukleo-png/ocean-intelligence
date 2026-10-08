@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { mockMarketIndicators, mockMarketSignals } from "@/data/mockMarket";
 import { METRICS, readAisGates, readMetric } from "@/lib/data/read";
 import { ChokepointCard } from "@/components/market/chokepoint-card";
+import { BunkerInputCard } from "@/components/market/bunker-input-card";
 import { getStore } from "@/lib/store";
 import { LiveMetricTile } from "@/components/market/live-metric-tile";
 import { PageShell } from "@/components/shell/page-shell";
@@ -14,7 +15,7 @@ import { SignalCard } from "@/components/market/signal-card";
 export const metadata: Metadata = {
   title: "시황",
   description:
-    "Brent·WTI·USD/KRW 등 공식 소스 수집 지표와 조선 시황 예시 지표·시그널(예시 데이터).",
+    "Brent·WTI·Dubai 월평균·USD/KRW·SCFI·KCCI 수집 지표, 벙커가 직접 입력, 조선 시황 예시 지표·시그널(예시 데이터).",
 };
 
 // ISR 5분 — 홈과 같은 규칙(lib/ingest/background.ts)
@@ -64,8 +65,13 @@ const ASSUMPTIONS = (
     </p>
     <p>
       <strong>수집 지표</strong> — Brent·WTI는 EIA 일간 종가(주 1회 발표), USD/KRW는 한국수출입은행 → 한국은행 ECOS →
-      ECB 기준환율 순으로 키가 있는 소스를 씁니다. 수집에 실패하면 마지막 성공값과 실패 사유를 표시하고, API 키가 없으면
-      값을 비워 둡니다. Dubai·벙커유·SCFI는 약관을 지키는 무료 소스를 확보하지 못해 비워 둡니다.
+      ECB 기준환율 순으로 키가 있는 소스를 씁니다. Dubai는 일간 값(Platts)을 쓸 수 없어 IMF가 공개하는 <strong>월평균</strong>을
+      표시합니다. SCFI는 상하이해운거래소가 공개하는 종합지수, KCCI는 한국해양진흥공사 공개 지수입니다. 수집에 실패하면
+      마지막 성공값과 실패 사유를 표시하고, API 키가 없으면 값을 비워 둡니다.
+    </p>
+    <p>
+      <strong>벙커유</strong> — 약관이 수집·재게시를 허용하는 무료 소스가 없어 수집하지 않습니다. 직접 입력한 값은 이 브라우저에만
+      저장되고 계산기 기본값으로 쓰입니다.
     </p>
     <p>
       <strong>조선 지표</strong> — 이후 조선 영업기회 화면으로 옮깁니다.
@@ -95,15 +101,16 @@ export default async function MarketPage() {
             description="공식·공공 소스에서 서버가 수집한 값입니다. 소스마다 발표 주기가 달라 원천 기준 시각을 함께 표시합니다."
             badge={null}
           />
-          <ul role="list" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6 xl:grid-cols-4">
+          <ul role="list" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {readings.map((r) => (
               <li key={r.id}>
                 <LiveMetricTile def={METRICS.find((m) => m.id === r.id)!} reading={r} />
               </li>
             ))}
           </ul>
-          <div className="mt-4 lg:mt-6">
+          <div className="mt-4 grid gap-4 lg:mt-6 lg:gap-6">
             <ChokepointCard feed={ais} />
+            <BunkerInputCard />
           </div>
         </section>
 

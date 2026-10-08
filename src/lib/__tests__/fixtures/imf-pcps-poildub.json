@@ -1,0 +1,315 @@
+{
+ "meta": {},
+ "data": {
+  "dataSets": [
+   {
+    "structure": 0,
+    "action": "Replace",
+    "series": {
+     "0:0:0:0": {
+      "attributes": [
+       0,
+       null,
+       null
+      ],
+      "observations": {
+       "0": [
+        "62.72818181818182",
+        null,
+        0
+       ],
+       "1": [
+        "68.5085",
+        null,
+        0
+       ],
+       "2": [
+        "126.7063636363636",
+        null,
+        0
+       ],
+       "3": [
+        "105.2990909090909",
+        null,
+        0
+       ],
+       "4": [
+        "100.3642857142857",
+        null,
+        0
+       ],
+       "5": [
+        "79.53954545454545",
+        null,
+        0
+       ],
+       "6": [
+        "77.13181818181818",
+        null,
+        0
+       ],
+       "7": [
+        "88.05333333333333",
+        null,
+        0
+       ],
+       "8": [
+        "111.8252380952381",
+        null,
+        0
+       ]
+      }
+     }
+    }
+   }
+  ],
+  "structures": [
+   {
+    "dataSets": [
+     0
+    ],
+    "links": [
+     {
+      "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=IMF.RES:PCPS(9.0.0)",
+      "title": "Dataflow"
+     },
+     {
+      "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=IMF.RES:DSD_PCPS(10.0.0)",
+      "title": "DataStructureDefinition"
+     }
+    ],
+    "dimensions": {
+     "series": [
+      {
+       "id": "COUNTRY",
+       "keyPosition": 0,
+       "roles": [],
+       "values": [
+        {
+         "id": "G001"
+        }
+       ]
+      },
+      {
+       "id": "INDICATOR",
+       "keyPosition": 1,
+       "roles": [],
+       "values": [
+        {
+         "id": "POILDUB"
+        }
+       ]
+      },
+      {
+       "id": "DATA_TRANSFORMATION",
+       "keyPosition": 2,
+       "roles": [],
+       "values": [
+        {
+         "id": "USD"
+        }
+       ]
+      },
+      {
+       "id": "FREQUENCY",
+       "keyPosition": 3,
+       "roles": [],
+       "values": [
+        {
+         "id": "M"
+        }
+       ]
+      }
+     ],
+     "observation": [
+      {
+       "id": "TIME_PERIOD",
+       "keyPosition": 4,
+       "values": [
+        {
+         "value": "2026-M01"
+        },
+        {
+         "value": "2026-M02"
+        },
+        {
+         "value": "2026-M03"
+        },
+        {
+         "value": "2026-M04"
+        },
+        {
+         "value": "2026-M05"
+        },
+        {
+         "value": "2026-M06"
+        },
+        {
+         "value": "2026-M07"
+        },
+        {
+         "value": "2026-M08"
+        },
+        {
+         "value": "2026-M09"
+        }
+       ]
+      }
+     ]
+    },
+    "measures": {
+     "observation": [
+      {
+       "id": "OBS_VALUE",
+       "roles": []
+      }
+     ]
+    },
+    "attributes": {
+     "dimensionGroup": [
+      {
+       "id": "CURRENCY",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "COMMODITY_CF",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "PCPS_RY",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "INDEX_TYPE",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "PRICES",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "EXRATE",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      },
+      {
+       "id": "TRANSFORMATION",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "INDICATOR"
+        ]
+       }
+      }
+     ],
+     "series": [
+      {
+       "id": "SCALE",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "COUNTRY",
+         "INDICATOR",
+         "DATA_TRANSFORMATION",
+         "FREQUENCY"
+        ]
+       },
+       "values": [
+        {
+         "id": "0"
+        }
+       ]
+      },
+      {
+       "id": "DECIMAL_DISPLAYED",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "COUNTRY",
+         "INDICATOR",
+         "DATA_TRANSFORMATION",
+         "FREQUENCY"
+        ]
+       }
+      },
+      {
+       "id": "OVERLAP",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "dimensions": [
+         "COUNTRY",
+         "INDICATOR",
+         "DATA_TRANSFORMATION",
+         "FREQUENCY"
+        ]
+       }
+      }
+     ],
+     "observation": [
+      {
+       "id": "PRECISION",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "observation": {}
+       }
+      },
+      {
+       "id": "DERIVATION_TYPE",
+       "roles": [],
+       "isMandatory": false,
+       "relationship": {
+        "observation": {}
+       },
+       "values": [
+        {
+         "id": "R"
+        }
+       ]
+      }
+     ]
+    },
+    "annotations": []
+   }
+  ]
+ }
+}

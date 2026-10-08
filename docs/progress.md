@@ -23,13 +23,15 @@
   `/api/data/[metric]`, `/api/status`, `/status` 페이지, 헤더 상태 점.
 - 스케줄: 헤더 점의 `/api/status` 호출 → after()로 기한 지난 소스 수집(정적 페이지의 after는 빌드·재검증 중 외부 호출이 막혀 쓰지 않음) →
   상태가 바뀌면 /, /market, /ops/weather 재검증. 외부 스케줄러 예시 `supabase/cron.example.sql`, `vercel.json` 일 1회 안전망.
-- 키 없이 LIVE: USD/KRW(ECB 기준환율·Frankfurter, 3순위). 나머지는 "API 키 미설정" 또는 "연결 예정"(소스 미확보).
+- 키 없이 LIVE: USD/KRW(ECB 기준환율, 3순위), Dubai 월평균(IMF PCPS), SCFI 종합지수(SSEI 공개), KCCI(해양진흥공사).
+  벙커유는 수집하지 않고 /market "직접 입력"(localStorage `oi-bunker-input`, `src/lib/bunker-input.ts`) — Phase 5 계산기가 기본값으로 읽는다.
+  나머지(EIA·수출입은행·ECOS·기상청·AIS)는 "API 키 미설정".
 - `src/lib/portRisk.ts` + 11.4 검증 케이스, `src/data/kmaZones.ts`(특보구역코드 원문), `src/data/kmaPortZones.ts`(법령 별표 7 기준 매핑),
   `src/lib/kma/warnings.ts`(통보문 t6·t7 해석, 예보용어 시간범주). `/ops/weather` 국내 탭(표·지도·근거·통보문 원문·면책).
 - 지도: `src/components/map/sea-map.tsx`(MapLibre 6.10.0 동적 import, OpenFreeMap, 테마 토큰). 워커는 public/vendor로 복사(predev·prebuild).
 - 검증: 테스트 94, lint 0, build OK, Lighthouse 실측 / 99·LCP 1.98s, /ops/weather 99·CLS 0, /market 100, /status 99.
 - 남은 일(키 발급 후): 실값 연결·Vercel 서버 호출 테스트, 날씨누리 3개 항 대조, API허브 명세(단기 해상예보·태풍), 묘박지·특보구역 폴리곤,
-  Dubai·벙커·SCFI 결정(8.2).
+  KMA_APIHUB_KEY로 단기 해상예보 연결 시 `kmaPortZones.shortSeaRegIds` 사용.
 
 ## 사용자 준비 항목 (발급되는 대로 연결)
 기상청 API허브·공공데이터포털(특보·단기·중기예보) 활용 신청, EIA·수출입은행·한국은행 ECOS·aisstream.io 키,
