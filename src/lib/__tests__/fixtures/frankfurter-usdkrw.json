@@ -1,0 +1,38 @@
+[
+ {
+  "date": "2026-09-30",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1355.4
+ },
+ {
+  "date": "2026-10-01",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1361.27
+ },
+ {
+  "date": "2026-10-02",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1348.28
+ },
+ {
+  "date": "2026-10-05",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1343.98
+ },
+ {
+  "date": "2026-10-06",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1338.78
+ },
+ {
+  "date": "2026-10-07",
+  "base": "USD",
+  "quote": "KRW",
+  "rate": 1338.69
+ }
+]

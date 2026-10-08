@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Fragment } from "react";
-import { PlugZap } from "lucide-react";
 import { mockMarketIndicators, mockMarketSignals } from "@/data/mockMarket";
-import { TICKER_SPEC } from "@/lib/market/ticker";
+import { METRICS, readAisGates, readMetric } from "@/lib/data/read";
+import { ChokepointCard } from "@/components/market/chokepoint-card";
+import { getStore } from "@/lib/store";
+import { LiveMetricTile } from "@/components/market/live-metric-tile";
 import { PageShell } from "@/components/shell/page-shell";
 import { PageHeader } from "@/components/shell/page-header";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
@@ -13,11 +14,11 @@ import { SignalCard } from "@/components/market/signal-card";
 export const metadata: Metadata = {
   title: "시황",
   description:
-    "조선 시황 예시 지표 8개와 시장 시그널 (예시 데이터). 유가·환율·벙커·SCFI LIVE 지표는 데이터 소스 연결 후 표시됩니다.",
+    "Brent·WTI·USD/KRW 등 공식 소스 수집 지표와 조선 시황 예시 지표·시그널(예시 데이터).",
 };
 
-// 상단에 들어올 LIVE 지표 이름(홈 티커 사양과 같은 목록, 국내항 경보 제외)
-const PLANNED_LIVE = TICKER_SPEC.filter((t) => t.key !== "kr-warnings").map((t) => t.label);
+// ISR 5분 — 홈과 같은 규칙(lib/ingest/background.ts)
+export const revalidate = 300;
 
 const IMPORTANCE_RANK = { high: 0, medium: 1, low: 2 } as const;
 const SIGNALS = [...mockMarketSignals].sort((a, b) => IMPORTANCE_RANK[a.importance] - IMPORTANCE_RANK[b.importance]);
@@ -62,56 +63,49 @@ const ASSUMPTIONS = (
       <strong>시그널 중요도</strong> — 높음·보통·낮음은 예시 판단입니다.
     </p>
     <p>
-      <strong>예정</strong> — 유가·환율·벙커·SCFI LIVE 지표는 서버 수집으로 연결할 예정입니다. 수집에 실패하면
-      마지막 성공값과 수집 시각을 함께 표시하고, 연결 전에는 값을 비워 둡니다. 조선 지표는 이후 조선 영업기회 화면으로
-      옮깁니다.
+      <strong>수집 지표</strong> — Brent·WTI는 EIA 일간 종가(주 1회 발표), USD/KRW는 한국수출입은행 → 한국은행 ECOS →
+      ECB 기준환율 순으로 키가 있는 소스를 씁니다. 수집에 실패하면 마지막 성공값과 실패 사유를 표시하고, API 키가 없으면
+      값을 비워 둡니다. Dubai·벙커유·SCFI는 약관을 지키는 무료 소스를 확보하지 못해 비워 둡니다.
+    </p>
+    <p>
+      <strong>조선 지표</strong> — 이후 조선 영업기회 화면으로 옮깁니다.
     </p>
   </>
 );
 
-export default function MarketPage() {
+export default async function MarketPage() {
+  const store = getStore();
+  const [readings, ais] = await Promise.all([Promise.all(METRICS.map((m) => readMetric(store, m.id))), readAisGates(store)]);
   return (
     <PageShell>
       <PageHeader
         eyebrow="MARKET"
         title="시황"
-        description="조선 시황 지표와 시그널의 예시 화면입니다. 유가·환율·운임 LIVE 지표는 연결 예정입니다."
+        description="유가·환율·운임은 공식 소스 수집값, 조선 시황 지표와 시그널은 예시 데이터입니다."
         assumptions={ASSUMPTIONS}
         assumptionsTitle="데이터 기준 · 한계"
       />
 
       {/* 섹션 간격 clamp(3rem, 6vw, 6rem) — 지시서 3.5, 홈과 같은 값 */}
       <div className="space-y-[clamp(3rem,6vw,6rem)]">
-        {/* LIVE 지표 자리 — 소스 연결 전에는 가짜 값을 채우지 않는다 */}
-        <aside
-          aria-label="LIVE 지표 연결 예정"
-          className="flex flex-col gap-4 rounded-xl border border-dashed border-line-strong p-4 sm:flex-row sm:items-center sm:justify-between md:px-5"
-        >
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-inset text-fg-muted">
-              <PlugZap size={16} strokeWidth={1.75} aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-medium leading-snug text-fg">
-                유가·환율·벙커·SCFI LIVE 지표는 데이터 소스 연결 후 이 화면 상단에 표시됩니다
-              </p>
-              {/* 지표 이름 하나("VLSFO 부산")가 줄바꿈으로 갈라지지 않게 이름 단위로 묶고,
-                  구분점은 앞 이름에 붙여 줄이 "·"로 시작하지 않게 한다 */}
-              <p className="mt-1 text-xs leading-relaxed text-fg-muted">
-                {PLANNED_LIVE.map((label, i) => (
-                  <Fragment key={label}>
-                    {i > 0 && " "}
-                    <span className="whitespace-nowrap">
-                      {label}
-                      {i < PLANNED_LIVE.length - 1 && " ·"}
-                    </span>
-                  </Fragment>
-                ))}
-              </p>
-            </div>
+        <section aria-labelledby="market-live">
+          <SectionTitle
+            id="market-live"
+            title="유가 · 환율 · 운임"
+            description="공식·공공 소스에서 서버가 수집한 값입니다. 소스마다 발표 주기가 달라 원천 기준 시각을 함께 표시합니다."
+            badge={null}
+          />
+          <ul role="list" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6 xl:grid-cols-4">
+            {readings.map((r) => (
+              <li key={r.id}>
+                <LiveMetricTile def={METRICS.find((m) => m.id === r.id)!} reading={r} />
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 lg:mt-6">
+            <ChokepointCard feed={ais} />
           </div>
-          <DataBadge grade="pending" className="ml-12 self-start sm:ml-0 sm:self-center" />
-        </aside>
+        </section>
 
         <section aria-labelledby="market-indicators">
           <SectionTitle

@@ -48,6 +48,8 @@ export interface DataProvenance {
   sourceUrl?: string;
   /** 원천 기준 시각 — 원천이 값을 발표·기준한 시각 */
   asOf?: string | Date;
+  /** "day"면 원천이 날짜만 준 값(일간 종가·고시) — 시각을 지어내지 않고 날짜만 표시 */
+  asOfPrecision?: "day" | "minute";
   /** 우리 서버가 수집한 시각 */
   fetchedAt?: string | Date;
   /** 발표 주기 (예: "주 1회 · 금", "장중 연속", "일 1회") */
@@ -90,11 +92,18 @@ function isToday(at: string | Date | undefined) {
   return formatKst(d).slice(0, 5) === today;
 }
 
+/** 원천 기준 시각 표기 — 날짜만 있는 값은 "10.07", 시각이 있으면 "10.07 14:30" */
+export function formatAsOf(p: Pick<DataProvenance, "asOf" | "asOfPrecision">) {
+  if (!p.asOf) return "";
+  if (p.asOfPrecision === "day" && typeof p.asOf === "string") return `${p.asOf.slice(5, 7)}.${p.asOf.slice(8, 10)}`;
+  return formatKst(p.asOf);
+}
+
 /** 배지 옆·툴팁에 쓰는 출처 설명 줄들 */
 export function provenanceLines(grade: DataGrade, p: DataProvenance = {}) {
   const lines: string[] = [];
   if (p.source) lines.push(`출처 ${p.source}`);
-  if (p.asOf) lines.push(`원천 기준 ${formatKst(p.asOf)} KST`);
+  if (p.asOf) lines.push(p.asOfPrecision === "day" ? `원천 기준일 ${formatAsOf(p)}` : `원천 기준 ${formatKst(p.asOf)} KST`);
   if (p.fetchedAt) lines.push(`${grade === "stale" ? "마지막 성공 수집" : "수집"} ${formatKst(p.fetchedAt)} KST`);
   if (p.cadence) lines.push(`발표 주기 ${p.cadence}`);
   if (p.delay) lines.push(p.delay);
@@ -114,9 +123,11 @@ export function DataBadge({
   if (grade === "live") {
     // 배지에는 원천 기준 시각을 짧게(오늘이면 시:분, 아니면 월.일)
     const stamp = provenance.asOf
-      ? isToday(provenance.asOf)
-        ? formatKst(provenance.asOf, false)
-        : formatKst(provenance.asOf).slice(0, 5)
+      ? provenance.asOfPrecision === "day"
+        ? formatAsOf(provenance)
+        : isToday(provenance.asOf)
+          ? formatKst(provenance.asOf, false)
+          : formatKst(provenance.asOf).slice(0, 5)
       : "";
     return (
       <Badge tone="up" dot className={className} title={title}>
@@ -172,7 +183,7 @@ export function DataBadge({
 export function ProvenanceLine({ grade, className, ...p }: { grade: DataGrade; className?: string } & DataProvenance) {
   const parts = [
     p.source,
-    p.asOf && `원천 ${formatKst(p.asOf)}`,
+    p.asOf && `원천 ${formatAsOf(p)}`,
     p.fetchedAt && `${grade === "stale" ? "마지막 성공" : "수집"} ${formatKst(p.fetchedAt)}`,
     p.cadence,
     grade === "stale" && p.error ? `실패: ${p.error}` : null,

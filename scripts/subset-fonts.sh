@@ -4,7 +4,7 @@
 #
 # 결과물 (src/app/fonts/)
 #   PretendardVariable.core.woff2  라틴 + 사이트 UI에 실제로 쓰인 한글(주석 제외) + 쓰는 기호. 굵기 축 400–700.
-#                                  첫 페인트 직후 받는다(lib/theme.ts의 FONT_LOAD_SCRIPT).
+#                                  preload로 첫 화면과 함께 받는다(src/app/fonts.ts).
 #   PretendardVariable.ext.woff2   나머지 KS X 1001 한글 2,350자 + 자모 + 기호. unicode-range로 선언해
 #                                  코어에 없는 글자가 화면에 나올 때만 받는다(예: 기상청 통보문).
 #   pretendard-core.txt            코어에 넣은 한글 목록 — font-coverage 테스트가 소스와 대조한다.

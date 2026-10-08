@@ -1,6 +1,6 @@
-# 데이터 소스 조사표 (지시서 11.2) — 초안
+# 데이터 소스 조사표 (지시서 11.2)
 
-> 작성 2026-10-06 · 상태: **조사 단계, 구현 전**
+> 작성 2026-10-06 · 갱신 2026-10-08(Phase 2.5 구현 — 결과는 맨 아래 8장) · 상태: **수집 구조 구현, 키 발급 대기**
 > 범례 — 채택 / 조건부(허락·명세 확인 후) / 유료 대안 / 탈락
 > "Vercel 호출 테스트"는 배포 후 수행 예정(11.2 절차 3). 아래 "로컬 확인"은 개발 PC에서의 도달 여부만 의미한다.
 
@@ -94,3 +94,49 @@
 
 - **Supabase(Postgres) 무료 티어**: 시계열 테이블 + 마지막 성공값 조회가 SQL로 단순. `pg_cron` + `pg_net`으로 `/api/ingest/[source]`를 주기 호출하면 Vercel Hobby의 1일 1회 제한을 우회할 수 있다(호출 엔드포인트는 비밀 토큰으로 보호). 무료 프로젝트 비활성 일시정지 정책·pg_net 사용 가능 여부는 계정 생성 후 확인.
 - 대안: Vercel Pro 전환(분 단위 cron, 비용 발생) 또는 GitHub Actions schedule(무료, 지연 가능).
+
+---
+
+## 8. Phase 2.5 구현 결과 (2026-10-08)
+
+### 8.1 소스별 상태
+
+| 지표 | 소스(우선순위) | 키 | 구현 | 명세 근거 | 비고 |
+|---|---|---|---|---|---|
+| Brent · WTI | EIA v2 `petroleum/pri/spt` RBRTE·RWTC | `EIA_API_KEY` | 어댑터·테스트 | eia.gov/opendata/documentation.php | 행 열 이름(series·value)은 키 발급 후 첫 응답으로 재확인. 열이 없으면 parse 실패로 기록 |
+| USD/KRW | ① 한국수출입은행 AP01 | `KOREAEXIM_API_KEY` | 어댑터·테스트 | 수출입은행 Open API 안내(명세·응답 예시) | 비영업일·11시 전 빈 응답 → 7일 거슬러 조회. 일 1,000회 |
+| | ② 한국은행 ECOS 731Y001/0000001 | `ECOS_API_KEY` | 어댑터·테스트 | ECOS 공개 sample 키 실호출 응답(픽스처) | 운영에는 sample 키를 쓰지 않음 |
+| | ③ ECB 기준환율(Frankfurter v2, `providers=ecb`) | 불필요 | **LIVE 동작** | 실호출 응답(픽스처) | **새로 추가**. EUR 기준 고시의 USD 교차 산출 → 국내 매매기준율과 몇 원 차이. ①② 키가 없을 때만 쓰고 출처를 그대로 표기 |
+| 국내항 특보·예비특보 | 기상청 기상특보 조회서비스 `getPwnStatus`(현황 t6·t7) + `getPwnCd`(구역 코드별 발효 시각) | `KMA_DATA_GO_KR_KEY` | 어댑터·해석기·테스트 | 활용가이드(260601)·특보구역코드안내 xlsx — data.go.kr 참고문서 | 통보문 시간 표현(아침·밤 등)은 기상청 예보용어 시간범주로 해석 |
+| 중기해상예보 | 기상청 중기예보 조회서비스 `getMidSeaFcst` | 위와 같은 키 | 어댑터·테스트 | 활용가이드(241128) | 06·18시 발표, 4(5)~10일 최고 파고 |
+| 단기 해상예보 · 태풍 | 기상청 API허브 | `KMA_APIHUB_KEY` | **명세 대기** | — | 가입(휴대폰 인증) 후 명세를 받아야 필드를 알 수 있음. 위험도는 이 입력 없이 산출하고 "판단 제외"로 표기 |
+| AIS 초크포인트 | aisstream.io WebSocket(서버에서 40초 수집 창) | `AISSTREAM_API_KEY` | 어댑터·집계·테스트 | aisstream 문서 + 메시지 모델 YAML | 요청 시 갱신에서 제외(외부 스케줄러 전용). 국내 묘박지 폴리곤 미반영(8.3) |
+| Dubai | — | — | 수집 불가 | — | 8.2 |
+| 벙커유 | — | — | 수집 불가 | — | 8.2 |
+| SCFI | — | — | 보류 | — | SSE 서면 허락 전 |
+
+### 8.2 사용자 결정이 필요한 지표
+
+- **Dubai 일간**: 원천이 Platts 평가(수집 금지). GME Oman 선물 정산가는 T+1 Daily Bulletin으로 공개되지만 제3자 제공·파생 이용은 GME/CME 정보이용계약(ILA) 대상([GME Data](https://www.gulfmerc.com/gme-product-services/gme-data)). 선택지: ⓐ GME 라이선스 문의, ⓑ IMF 월평균(FRED `POILDUBUSDM`)을 "월평균"으로 명시해 표시, ⓒ 티커에서 제외.
+- **벙커유**: 약관이 수집·재게시를 허용하는 무료 공개 사이트를 찾지 못함(Ship & Bunker 금지, OilPriceAPI는 마린 연료 게시권 없음을 FAQ에 명시, OilMonster·Engine 등은 약관 미확인 — "All rights reserved"). 선택지: ⓐ Bunker Index·MABUX 표시권 포함 견적, ⓑ 사이트 운영자에게 서면 허락 요청, ⓒ 계산기는 사용자 입력 벙커가로 운영(현재 방식).
+- **SCFI**: SSE 서면 허락. **KCCI**: 한국해양진흥공사 이용조건(공공누리 유형) 확인.
+
+### 8.3 미반영(확인 자료 필요)
+
+- 국내 항만 묘박지·항내 폴리곤(11.3): 해양수산부 고시 「무역항의 항계 안 정박지」 좌표로 확인 후 추가.
+- 해상 특보구역 경계 폴리곤(11.4 특보 지도): 공개 경계 데이터 확보 후. 지금 지도는 항만 점(UN/LOCODE)만.
+- 항만별 실제 입출항 통제 기준(운영세칙·VTS 고시): 확인된 것 없음 → "항만별 기준 확인 필요".
+
+### 8.4 저장소 · 스케줄 · 지도
+
+- **저장소: Supabase(Postgres) 권장 유지** — 시계열·마지막 성공값·수집 기록을 SQL 한 곳에서, 무료 티어, 같은 곳의 pg_cron으로 스케줄까지. PostgREST로 직접 호출(SDK 없음). 스키마 `supabase/migrations/0001_ingest.sql`. 키가 없으면 서버 메모리(임시)로 동작하고 /status에 표시.
+  - 메모리 모드 한계: 서버리스 인스턴스마다 따로라 Vercel에서는 값이 인스턴스 사이에 공유되지 않는다. 운영 전에 Supabase 연결 필요.
+- **스케줄(플랜 무관)**: ① 요청 시 갱신 — 헤더 상태 점이 모든 페이지에서 `/api/status`를 부르고, 그 응답 뒤(`after`) 기한 지난 소스만 수집, 값이나 상태가 바뀌면 ISR 페이지(/, /market, /ops/weather)를 재검증. ② 외부 스케줄러 — `/api/ingest/[source]`(Bearer `CRON_SECRET`), 예시 `supabase/cron.example.sql`(특보 10분·AIS 5분·전체 30분). ③ `vercel.json` 일 1회(07:00 KST) 안전망 — Hobby에서도 허용.
+- **값 검증**: 직전 대비 ±30% 이상 저장 안 함(경고 로그·실패 기록), 파싱 실패·빈 응답·인증 오류·시간 초과를 구분해 기록.
+- **베이스맵: OpenFreeMap 공개 인스턴스**(OpenMapTiles 벡터 타일) — 무료·무키·호출 한도 없음·상업 이용 가능, 출처 표기 의무(OpenFreeMap · © OpenMapTiles · OpenStreetMap), SLA 없음. 대안: MapTiler(키·무료 티어 비상업), Stadia(키·도메인 인증), Protomaps 자체 호스팅(PMTiles 파일 보관 필요). 등심선은 OpenMapTiles에 없어 미표시(수심 데이터는 별도 승인 필요).
+- **MapLibre GL 6.10.0**(BSD-3): 지도 화면에서만 동적 import. ESM 워커는 `scripts/copy-maplibre-worker.mjs`가 `public/vendor/`로 복사(predev·prebuild).
+
+### 8.5 아직 못 한 검증
+
+- 11.2 절차 3 "Vercel 서버에서 실제 호출": 배포 승인 전이라 미실시. 로컬(개발 PC)에서는 Frankfurter 200, 수출입은행·EIA·ECOS·공공데이터포털 엔드포인트 도달(키 없음 응답) 확인.
+- 11.7 "날씨누리 특보 화면과 3개 항 대조": 기상청 키 발급 후.

@@ -1,8 +1,9 @@
 import type { DataGrade, DataProvenance } from "@/components/ui/badge";
+import { METRICS, readMetric, readPortRisks } from "@/lib/data/read";
+import type { DataStore } from "@/lib/store";
 import type { NumFormat } from "@/lib/utils";
 
-// 홈 라이브 티커(지시서 11.5 순서). 값은 Phase 2.5의 수집 파이프라인(/api/data)에서 채운다.
-// 소스가 연결되기 전에는 값을 비우고 "연결 예정"으로 표시한다 — 가짜 값으로 채우지 않는다.
+// 홈 라이브 티커(지시서 11.5 순서). 값은 수집 저장소에서 읽는다 — 수집 전·실패·키 없음은 그대로 드러낸다(가짜 값 금지).
 
 export interface TickerItem {
   key: string;
@@ -18,18 +19,46 @@ export interface TickerItem {
   positiveIsGood: boolean | null;
 }
 
-const PENDING: Pick<TickerItem, "value" | "changePct" | "grade"> = { value: null, changePct: null, grade: "pending" };
+const ORDER = ["brent", "dubai", "usdkrw", "vlsfo-sg", "vlsfo-busan", "scfi"] as const;
 
-export const TICKER_SPEC: Omit<TickerItem, "value" | "changePct" | "grade">[] = [
-  { key: "brent", label: "Brent", unit: "$/bbl", format: { decimals: 2 }, provenance: { source: "EIA", cadence: "일간 종가 · 주 1회 발표" }, positiveIsGood: null },
-  { key: "dubai", label: "Dubai", unit: "$/bbl", format: { decimals: 2 }, provenance: { cadence: "소스 검토 중" }, positiveIsGood: null },
-  { key: "usdkrw", label: "USD/KRW", unit: "원", format: { decimals: 2 }, provenance: { source: "한국수출입은행", cadence: "영업일 1회 고시" }, positiveIsGood: null },
-  { key: "vlsfo-sg", label: "VLSFO 싱가포르", unit: "$/MT", format: { decimals: 0 }, provenance: { cadence: "소스 검토 중" }, positiveIsGood: null },
-  { key: "vlsfo-busan", label: "VLSFO 부산", unit: "$/MT", format: { decimals: 0 }, provenance: { cadence: "소스 검토 중" }, positiveIsGood: null },
-  { key: "scfi", label: "SCFI", unit: "pt", format: { decimals: 0 }, provenance: { source: "상하이해운거래소", cadence: "주 1회 · 금" }, positiveIsGood: null },
-  { key: "kr-warnings", label: "국내항 경보", unit: "곳", format: { decimals: 0 }, provenance: { source: "기상청", cadence: "수시 발표" }, positiveIsGood: false },
-];
+export async function getTickerItems(store: DataStore, env: Record<string, string | undefined> = process.env): Promise<TickerItem[]> {
+  const readings = await Promise.all(ORDER.map((id) => readMetric(store, id, env, 2)));
+  const items: TickerItem[] = readings.map((r) => {
+    const def = METRICS.find((m) => m.id === r.id)!;
+    return {
+      key: r.id,
+      label: def.label,
+      unit: def.unit,
+      value: r.value,
+      changePct: r.changePct,
+      format: { decimals: def.decimals },
+      grade: r.grade,
+      provenance: r.provenance,
+      positiveIsGood: null,
+    };
+  });
 
-export async function getTickerItems(): Promise<TickerItem[]> {
-  return TICKER_SPEC.map((spec) => ({ ...spec, ...PENDING }));
+  // 국내항 경보 수 = 위험도 "주의" 이상 항만 수
+  const board = await readPortRisks(store, env);
+  const w = board.warnings;
+  const count = w.state === "ok" ? board.ports.filter((p) => (p.level ?? 0) >= 2).length : null;
+  items.push({
+    key: "kr-warnings",
+    label: "국내항 주의 이상",
+    unit: "곳",
+    value: count,
+    changePct: null,
+    format: { decimals: 0 },
+    grade: w.state === "ok" ? "live" : w.state === "nokey" ? "nokey" : w.state === "failed" ? "stale" : "pending",
+    provenance: {
+      source: "기상청",
+      sourceUrl: "https://www.weather.go.kr/w/special-report/overall.do",
+      cadence: "특보 수시 발표",
+      ...(w.state === "ok" ? { asOf: w.asOf, fetchedAt: w.fetchedAt } : {}),
+      ...(w.state === "failed" ? { error: w.error, fetchedAt: w.lastSuccessAt ?? undefined } : {}),
+      ...(w.state === "nokey" ? { error: "KMA_DATA_GO_KR_KEY 미설정" } : {}),
+    },
+    positiveIsGood: false,
+  });
+  return items;
 }

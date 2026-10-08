@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -42,3 +43,6 @@ next-env.d.ts
 
 # 로컬 검증 스크린샷
 /.reports/
+
+# MapLibre 워커(scripts/copy-maplibre-worker.mjs가 생성)
+/public/vendor/

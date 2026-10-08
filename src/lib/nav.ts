@@ -93,7 +93,7 @@ export const OPS_TOOLS: NavItem[] = [
     en: "Port Weather Risk",
     description: "기상청 특보·예보 기반 항만별 위험 등급",
     icon: Waves,
-    status: "soon",
+    status: "ready",
     phase: "Phase 2.5",
     keywords: ["weather", "기상", "특보", "풍랑", "태풍", "클로징", "항만"],
   },

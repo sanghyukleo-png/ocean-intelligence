@@ -11,6 +11,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge, DataBadge, formatKst } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getTickerItems } from "@/lib/market/ticker";
+import { readPortRisks } from "@/lib/data/read";
+import { getStore } from "@/lib/store";
 import { getShippingNews } from "@/lib/liveFeed";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +30,12 @@ function SectionTitle({ eyebrow, title, action }: { eyebrow: string; title: stri
   );
 }
 
+// ISR 5분. 수집은 동적 라우트가 맡고(lib/ingest/background.ts) 새 값이 들어오면 이 경로를 재검증한다
+export const revalidate = 300;
+
 export default async function HomePage() {
-  const [ticker, news] = await Promise.all([getTickerItems(), getShippingNews(5)]);
+  const store = getStore();
+  const [ticker, board, news] = await Promise.all([getTickerItems(store), readPortRisks(store), getShippingNews(5)]);
 
   return (
     <PageShell bleed>
@@ -69,7 +75,7 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="intro-fade mt-10 max-w-xl" style={{ "--d": "900ms" } as React.CSSProperties}>
-                <KoreaPortStrip />
+                <KoreaPortStrip board={board} />
               </div>
             </div>
           </div>

@@ -93,6 +93,8 @@
   --noise-opacity: 0.025;
 
   --map-sea: #e8eef5;
+
+  --map-icon-invert: 0;
   --map-land: #ffffff;
   --map-coast: #b9c5d4;
   --map-contour: #dbe4ee;
@@ -133,6 +135,7 @@
     --warn: #895710;
     --info: #2461b1;
     --map-sea: #e8eef5;
+    --map-icon-invert: 0;
     --map-land: #ffffff;
     --map-coast: #b9c5d4;
     --map-contour: #dbe4ee;
@@ -707,6 +710,38 @@ html {
 }
 
 /* ── 인쇄: 항상 라이트, 장식 제거 ───────────────────────────────── */
+/* ── MapLibre 컨트롤을 토큰에 맞춤(기본은 흰 배경). maplibre-gl.css가 나중에 로드되므로 .oi-map으로 우선순위를 올린다 ───────────────── */
+.oi-map .maplibregl-ctrl-group:not(:empty),
+.oi-map .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.oi-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: color-mix(in oklab, var(--bg-raised) 88%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  color: var(--fg-muted);
+}
+.oi-map .maplibregl-ctrl-group button {
+  width: 32px;
+  height: 32px;
+}
+.oi-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--line);
+}
+.oi-map .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(var(--map-icon-invert, 1)) opacity(0.75);
+}
+.oi-map .maplibregl-ctrl-attrib a {
+  color: var(--fg-muted);
+}
+.oi-map .maplibregl-ctrl-attrib-button {
+  filter: invert(var(--map-icon-invert, 1));
+  background-color: transparent;
+}
+.oi-map .maplibregl-cooperative-gesture-screen {
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+  color: var(--fg);
+  font-size: 0.875rem;
+}
+
 @media print {
   :root,
   [data-theme] {

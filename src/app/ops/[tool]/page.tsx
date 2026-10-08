@@ -48,7 +48,8 @@ const SCOPE: Record<string, string[]> = {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return OPS_TOOLS.map((t) => ({ tool: t.href.split("/").pop()! }));
+  // 화면이 준비된 도구는 같은 경로의 정적 page.tsx가 맡는다
+  return OPS_TOOLS.filter((t) => t.status === "soon").map((t) => ({ tool: t.href.split("/").pop()! }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ tool: string }> }): Promise<Metadata> {

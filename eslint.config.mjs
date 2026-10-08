@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 복사한 서드파티 번들(scripts/copy-maplibre-worker.mjs)
+    "public/vendor/**",
   ]),
 ]);
 

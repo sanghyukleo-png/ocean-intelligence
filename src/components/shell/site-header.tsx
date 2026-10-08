@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
+import { StatusDot } from "@/components/shell/status-dot";
 import { NavTile } from "@/components/shell/nav-tile";
 import { openCommandPalette } from "@/components/shell/command-palette";
 import { ABOUT_ITEM, TOP_NAV, isActive, type TopNavEntry } from "@/lib/nav";
@@ -188,6 +189,7 @@ export function SiteHeader() {
               ⌘K
             </kbd>
           </button>
+          <StatusDot />
           <ThemeToggle />
         </div>
       </div>
