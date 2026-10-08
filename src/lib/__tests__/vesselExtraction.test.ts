@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractVesselFromText } from "@/lib/vesselExtraction";
-import { sampleVesselSpecText } from "@/data/mockVessels";
+import { sampleVesselSpecText } from "./fixtures/vessels";
 
 function field(text: string, key: string) {
   const result = extractVesselFromText(text);

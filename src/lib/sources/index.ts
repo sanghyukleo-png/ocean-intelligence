@@ -1,9 +1,10 @@
 import { aisstreamSource } from "./aisstream";
 import { ecosSource } from "./ecos";
-import { eiaSource } from "./eia";
+import { eiaSource, eiaWebSource } from "./eia";
 import { frankfurterSource } from "./frankfurter";
 import { kobcKcciSource, sseScfiSource } from "./freightIndices";
 import { imfDubaiSource } from "./imf";
+import { openMeteoSource } from "./openMeteo";
 import { kmaApiHubSource, kmaMidSeaSource, kmaWarningsSource } from "./kma";
 import { koreaEximSource } from "./koreaexim";
 import type { SourceDef } from "./types";
@@ -12,6 +13,7 @@ import type { SourceDef } from "./types";
 
 export const SOURCES: SourceDef[] = [
   eiaSource,
+  eiaWebSource,
   koreaEximSource,
   ecosSource,
   frankfurterSource,
@@ -22,6 +24,7 @@ export const SOURCES: SourceDef[] = [
   imfDubaiSource,
   sseScfiSource,
   kobcKcciSource,
+  openMeteoSource,
 ];
 
 export function sourceById(id: string) {

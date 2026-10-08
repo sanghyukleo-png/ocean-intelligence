@@ -48,7 +48,7 @@ export function Sparkline({
   const path = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
   const last = pts[n - 1];
   const fmt = (v: number) => `${formatNum(v, format)}${unit ? ` ${unit}` : ""}`;
-  const summary = `${label} 예시 추이, ${n}개 시점${unit ? `, 단위 ${unit}` : ""}: ${data
+  const summary = `${label} 최근 추이, ${n}개 시점${unit ? `, 단위 ${unit}` : ""}: ${data
     .map((v) => formatNum(v, format))
     .join(", ")}`;
 

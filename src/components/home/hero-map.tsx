@@ -1,9 +1,13 @@
 import { HERO_MAP } from "@/data/geo/hero-map";
 import { cn } from "@/lib/utils";
 
-// 히어로 비주얼(지시서 11.5): 장식용 항로 호 대신 실제 데이터 레이어를 올린다 —
-//   ① 초크포인트 통과 탱커 척수(AIS)  ② 국내 해상 특보구역 등급(기상청)  → 둘 다 Phase 2.5에서 연결
-// 데이터가 들어오기 전에는 값 자리를 비운다. 가상 선박·움직이는 점·임의 항로 없음.
+// 히어로 비주얼(지시서 11.5): 장식용 항로 호 대신 실제 데이터 —
+//   초크포인트의 지금 바람·파고(Open-Meteo 72시간 예보의 첫 시각). AIS 탱커 척수는 키가 생기면 같은 칩에 더한다.
+// 데이터가 없으면 값 자리를 비운다. 가상 선박·움직이는 점·임의 항로 없음.
+
+/** 히어로 칩 id → 해협 기상 */
+export type GateNow = Record<string, { windKt: number | null; waveM: number | null }>;
+const CHIP_TO_GATE: Record<string, string> = { hormuz: "hormuz", malacca: "singapore", "korea-strait": "korea-strait" };
 
 function pct(v: number, total: number) {
   return `${(v / total) * 100}%`;
@@ -13,7 +17,10 @@ export function HeroMap({
   className,
   idPrefix = "hero-map",
   captionClassName,
+  gates,
 }: {
+  /** 해협 지금 바람·파고 — 없으면 "—" */
+  gates?: GateNow;
   className?: string;
   idPrefix?: string;
   /** 지도 아래 출처 캡션 (배경으로 깔리는 lg 이상에서는 숨기고 바깥에 따로 둔다) */
@@ -26,7 +33,7 @@ export function HeroMap({
   return (
     <figure className={cn("relative", className)} aria-labelledby={`${idPrefix}-caption`}>
       <figcaption id={`${idPrefix}-caption`} className="sr-only">
-        중동–동북아 해역 지도. 호르무즈, 말라카·싱가포르, 대한해협 초크포인트 표시. 통과 탱커 척수는 AIS 연결 후 표시됩니다.
+        중동–동북아 해역 지도. 호르무즈, 말라카·싱가포르, 대한해협의 지금 바람과 파고(모델 예보)를 표시합니다.
       </figcaption>
       <div className="relative w-full" style={{ aspectRatio: `${width} / ${height}` }}>
         <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 h-full w-full" aria-hidden="true">
@@ -65,8 +72,10 @@ export function HeroMap({
           </span>
         ))}
 
-        {/* 초크포인트: 링 + 통과 탱커 칩 */}
-        {chokepoints.map((c, i) => (
+        {/* 초크포인트: 링 + 지금 바람·파고 칩 */}
+        {chokepoints.map((c, i) => {
+          const g = gates?.[CHIP_TO_GATE[c.id]];
+          return (
           <div
             key={c.id}
             className="intro-fade absolute"
@@ -82,12 +91,21 @@ export function HeroMap({
             >
               <p className="font-mono text-[10px] tracking-wide text-fg-label">{c.label}</p>
               <p className="mt-1 flex items-center gap-2 text-[0.6875rem] md:text-xs">
-                <span className="text-fg-label">통과 탱커</span>
-                <span className="num text-fg-faint">—</span>
+                {g && g.windKt !== null ? (
+                  <span className="num text-fg">
+                    {Math.round(g.windKt)}kt{g.waveM !== null && ` · ${g.waveM.toFixed(1)}m`}
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-fg-label">바람·파고</span>
+                    <span className="num text-fg-faint">—</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       <HeroMapCaption className={cn("mt-2", captionClassName)} />
     </figure>
@@ -97,7 +115,7 @@ export function HeroMap({
 export function HeroMapCaption({ className }: { className?: string }) {
   return (
     <p className={cn("text-[0.6875rem] text-fg-label", className)}>
-      해안선 Natural Earth · 탱커 척수는 육상 AIS 수신 범위 기준(연결 예정)
+      해안선 Natural Earth · 해협 바람·파고 Open-Meteo 모델 예보(지금 시각)
     </p>
   );
 }

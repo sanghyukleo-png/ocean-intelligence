@@ -186,11 +186,6 @@
   --color-risk-4: var(--risk-4);
   --color-vessel-ais: var(--vessel-ais);
   --color-vessel-sim: var(--vessel-sim);
-  /* 조선 영업기회 점수 등급 */
-  --color-score-low: var(--fg-muted);
-  --color-score-medium: var(--info);
-  --color-score-high: var(--accent);
-  --color-score-vhigh: var(--up);
 
 
   --font-sans: var(--font-pretendard), var(--font-pretendard-ext), var(--font-sans-system);

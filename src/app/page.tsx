@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Factory, Newspaper } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Newspaper } from "lucide-react";
 import { PageShell } from "@/components/shell/page-shell";
 import { LiveTicker } from "@/components/home/live-ticker";
-import { HeroMap, HeroMapCaption } from "@/components/home/hero-map";
+import { HeroMap, HeroMapCaption, type GateNow } from "@/components/home/hero-map";
 import { KoreaPortStrip } from "@/components/home/korea-port-strip";
 import { ToolStrip } from "@/components/home/tool-strip";
 import { RecentWorkList } from "@/components/home/recent-work";
@@ -11,7 +11,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge, DataBadge, formatKst } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getTickerItems } from "@/lib/market/ticker";
-import { readPortRisks } from "@/lib/data/read";
+import { readMet, readPortRisks } from "@/lib/data/read";
+import { OVERSEAS_PORTS } from "@/data/overseasPorts";
+import { compass, summarizeMet } from "@/lib/weather/metSummary";
+import { formatNum } from "@/lib/utils";
 import { getStore } from "@/lib/store";
 import { getShippingNews } from "@/lib/liveFeed";
 import { cn } from "@/lib/utils";
@@ -35,7 +38,13 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const store = getStore();
-  const [ticker, board, news] = await Promise.all([getTickerItems(store), readPortRisks(store), getShippingNews(5)]);
+  const [ticker, board, news, met] = await Promise.all([getTickerItems(store), readPortRisks(store), getShippingNews(5), readMet(store)]);
+  const gates: GateNow = {};
+  const overseas: { op: (typeof OVERSEAS_PORTS)[number]; s: ReturnType<typeof summarizeMet> | null }[] = OVERSEAS_PORTS.map((op) => {
+    const p = met.state === "ok" ? met.data.points.find((x) => x.kind === "overseas" && x.id === op.id) : undefined;
+    return { op, s: p ? summarizeMet(p) : null };
+  });
+  if (met.state === "ok") for (const p of met.data.points.filter((x) => x.kind === "gate")) gates[p.id] = { windKt: p.windKt[0] ?? null, waveM: p.waveM[0] ?? null };
 
   return (
     <PageShell bleed>
@@ -83,7 +92,7 @@ export default async function HomePage() {
 
         {/* 지도(한 벌): lg 이상에서는 오른쪽 배경으로 풀블리드, 그 아래는 본문 흐름 */}
         <div className="max-lg:container-page lg:pointer-events-none lg:absolute lg:right-0 lg:top-6 lg:w-[min(64vw,1240px)] xl:top-2 lg:[mask-image:linear-gradient(to_right,transparent,#000_22%,#000_92%,transparent)]">
-          <HeroMap captionClassName="lg:hidden" />
+          <HeroMap captionClassName="lg:hidden" gates={gates} />
         </div>
 
         <div className="container-page relative z-10 max-lg:mt-10">
@@ -157,26 +166,42 @@ export default async function HomePage() {
         </div>
 
         <Reveal as="section">
-          <Link
-            href="/opportunities"
-            data-spotlight=""
-            className="surface-card group flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:p-8"
-          >
-            <span className="flex items-start gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-inset text-fg-muted transition-colors group-hover:text-accent">
-                <Factory size={18} strokeWidth={1.75} aria-hidden="true" />
-              </span>
-              <span>
-                <span className="type-label block text-fg-label">SHIPBUILDING</span>
-                <span className="mt-2 block text-lg font-semibold text-fg">조선 영업기획 모듈</span>
-                <span className="mt-1 block max-w-2xl text-sm leading-relaxed text-fg-muted">
-                  선대 연령·발주잔량·연료 전환 지표로 선주사를 점수화하고 영업 브리프를 만듭니다. 예시 데이터로 동작합니다.
-                </span>
-              </span>
-            </span>
-            <span className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "self-start md:self-center")}>
-              열기
-              <ArrowRight size={14} aria-hidden="true" />
+          <SectionTitle
+            eyebrow="OVERSEAS PORTS"
+            title="해외 항만 바다 상태"
+            action={
+              met.state === "ok" ? (
+                <DataBadge grade="live" source="Open-Meteo" asOf={met.asOf} fetchedAt={met.fetchedAt} cadence="모델 갱신 시간별" />
+              ) : met.state === "failed" ? (
+                <DataBadge grade="stale" source="Open-Meteo" fetchedAt={met.lastSuccessAt ?? undefined} error={met.error} />
+              ) : (
+                <DataBadge grade="pending" source="Open-Meteo" />
+              )
+            }
+          />
+          <Link href="/ops/weather" data-spotlight="" className="surface-card group block p-4 md:p-5">
+            <ul role="list" className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
+              {overseas.map(({ op, s }) => (
+                <li key={op.id} className="min-w-0">
+                  <span className="block text-[0.8125rem] font-medium text-fg">{op.name}</span>
+                  {s ? (
+                    <>
+                      <span className="num mt-1 block text-xs text-fg">
+                        {compass(s.now.dirDeg)} {formatNum(s.now.windKt, { decimals: 0 })}kt · {formatNum(s.now.waveM, { decimals: 1 })}m
+                      </span>
+                      <span className={cn("num mt-1 block text-xs", s.exceedHours[0] > 0 ? "text-warn" : "text-fg-muted")}>
+                        24h 기준 초과 {s.exceedHours[0]}h
+                      </span>
+                    </>
+                  ) : (
+                    <span className="mt-1 block text-xs text-fg-faint">—</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <span className="mt-4 flex items-center justify-between gap-3 text-xs text-fg-muted">
+              <span>지금 바람·파고 · 기준 풍속 25kt·파고 2.0m·시정 1해리 · Weather data by Open-Meteo.com</span>
+              <ArrowRight size={14} aria-hidden="true" className="shrink-0 transition-colors group-hover:text-fg" />
             </span>
           </Link>
         </Reveal>

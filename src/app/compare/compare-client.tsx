@@ -1,23 +1,23 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
-import { Award, Check, Columns3 } from "lucide-react";
+import Link from "next/link";
+import { useId, useMemo, useState, useSyncExternalStore } from "react";
+import { Award, Check, Columns3, Ship } from "lucide-react";
 import { PageShell } from "@/components/shell/page-shell";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge, DataBadge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/motion/reveal";
 import { VesselIcon } from "@/components/vessel-icon";
-import { mockVessels } from "@/data/mockVessels";
+import { emptyVessels, readMyVessels, subscribeMyVessels } from "@/lib/myVessels";
 import { buildCompareRows, generateComparisonInsight, type CompareRow } from "@/lib/vesselCompare";
 import { cn, formatNum } from "@/lib/utils";
 import type { Vessel } from "@/types";
 
 const MIN_SELECTION = 2;
 const MAX_SELECTION = 4;
-const DEFAULT_SELECTION = ["v-01", "v-05"];
 
 /** 행 안의 값들이 같은 소수 자릿수로 보이도록 최대 자릿수(최대 2)를 쓴다 */
 function rowDecimals(row: CompareRow) {
@@ -160,20 +160,24 @@ function CompareTable({ vessels, rows }: { vessels: Vessel[]; rows: CompareRow[]
 }
 
 export default function CompareClient() {
-  const [selectedIds, setSelectedIds] = useState<string[]>(DEFAULT_SELECTION);
+  // 내 선박(이 브라우저에 저장한 추출 결과)만 비교한다 — 가상 선박 없음
+  const myVessels = useSyncExternalStore(subscribeMyVessels, readMyVessels, emptyVessels);
+  const [picked, setSelectedIds] = useState<string[] | null>(null);
   const limitId = useId();
-
-  const selectedVessels = useMemo(
-    () => selectedIds.map((id) => mockVessels.find((v) => v.id === id)).filter((v): v is Vessel => Boolean(v)),
-    [selectedIds]
-  );
+  // 처음에는 저장 순서대로 앞의 두 척, 삭제된 선박은 선택에서 뺀다
+  const selectedVessels = useMemo(() => {
+    const ids = picked ?? myVessels.slice(0, MIN_SELECTION).map((v) => v.id);
+    return ids.map((id) => myVessels.find((v) => v.id === id)).filter((v): v is Vessel => Boolean(v));
+  }, [picked, myVessels]);
+  const selectedIds = selectedVessels.map((v) => v.id);
   const rows = useMemo(() => buildCompareRows(selectedVessels), [selectedVessels]);
   const insights = useMemo(() => generateComparisonInsight(selectedVessels), [selectedVessels]);
   const vesselNames = selectedVessels.map((v) => v.vesselName);
   const atLimit = selectedIds.length >= MAX_SELECTION;
 
   function toggleVessel(id: string) {
-    setSelectedIds((prev) => {
+    setSelectedIds((p) => {
+      const prev = p ?? selectedIds;
       if (prev.includes(id)) return prev.filter((x) => x !== id);
       if (prev.length >= MAX_SELECTION) return prev;
       return [...prev, id];
@@ -207,7 +211,7 @@ export default function CompareClient() {
               선박마다 기준 속력·적재 상태가 다를 수 있습니다.
             </p>
             <p>
-              <strong>데이터</strong> — 시연용 가상 선박 10척(DEMO)입니다. 실제 선박·선주와 관계없습니다.
+              <strong>데이터</strong> — Q88 분석에서 &lsquo;내 선박&rsquo;으로 저장한 선박(이 브라우저에만 저장)입니다. 값은 붙여넣은 원문에서 읽은 그대로입니다.
             </p>
           </>
         }
@@ -218,7 +222,7 @@ export default function CompareClient() {
           as="h2"
           title={
             <span className="flex flex-wrap items-center gap-2">
-              비교할 선박 <DataBadge grade="demo" />
+              비교할 선박 <DataBadge grade="calc" />
             </span>
           }
           actions={
@@ -235,8 +239,20 @@ export default function CompareClient() {
           className="flex-wrap items-center"
         />
 
+        {myVessels.length === 0 && (
+          <EmptyState
+            icon={Ship}
+            title="저장한 선박이 없습니다"
+            description="Q88 분석에서 제원 텍스트를 추출하고 ‘내 선박에 저장’을 누르면 여기서 비교할 수 있습니다."
+            action={
+              <Link href="/vessels" className={buttonVariants({ variant: "secondary", size: "sm" })}>
+                Q88 분석으로
+              </Link>
+            }
+          />
+        )}
         <div role="group" aria-label="선박 목록" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {mockVessels.map((v) => {
+          {myVessels.map((v) => {
             const checked = selectedIds.includes(v.id);
             const disabled = !checked && atLimit;
             return (
@@ -276,7 +292,7 @@ export default function CompareClient() {
                   <span className="mt-1 block text-xs leading-snug text-fg-muted">
                     <VesselTypeText type={v.vesselType} />{" "}
                     <span className="whitespace-nowrap">
-                      · <span className="num">{v.builtYear}</span>
+                      · <span className="num">{v.builtYear ?? "건조연도 미확인"}</span>
                     </span>
                   </span>
                 </span>
@@ -303,7 +319,7 @@ export default function CompareClient() {
           <Reveal as="section" className="min-w-0 xl:col-span-8">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <h2 className="type-h2 text-fg">제원 비교</h2>
-              <DataBadge grade="demo" />
+              <DataBadge grade="calc" />
             </div>
             <CompareTable vessels={selectedVessels} rows={rows} />
             <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-fg-muted">
@@ -324,8 +340,7 @@ export default function CompareClient() {
               <Badge tone="neutral" title="고정 규칙으로 만든 문장 — AI가 생성하지 않음">
                 템플릿
               </Badge>
-              {/* 문장 속 선령·DWT·효율 수치도 데모 선박 데이터에서 나온다 */}
-              <DataBadge grade="demo" />
+              <DataBadge grade="calc" />
             </div>
             <Card>
               <p className="text-[0.8125rem] leading-relaxed text-fg-muted">

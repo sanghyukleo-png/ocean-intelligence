@@ -40,8 +40,7 @@ export function Badge({
 // calc   사용자 입력값으로 계산
 // input  사용자가 직접 입력한 시세(벙커가 등 — 수집하지 않는 값). 입력 기준일·출처 메모와 함께
 // pending 데이터 소스 연결 전 — 값 없음 (가짜 값으로 채우지 않는다)
-// demo   시뮬레이션 — 핵심 지표에는 쓰지 않는다 (지시서 11장)
-export type DataGrade = "live" | "stale" | "nokey" | "pending" | "calc" | "input" | "demo";
+export type DataGrade = "live" | "stale" | "nokey" | "pending" | "calc" | "input";
 
 export interface DataProvenance {
   /** 출처 이름 (예: "EIA", "기상청 API허브") */
@@ -178,16 +177,9 @@ export function DataBadge({
       </Badge>
     );
   }
-  if (grade === "calc") {
-    return (
-      <Badge tone="info" className={className} title="사용자 입력값으로 계산한 결과">
-        입력값 계산
-      </Badge>
-    );
-  }
   return (
-    <Badge tone="neutral" className={className} title="시뮬레이션 데이터 — 실제 시장 값이 아님">
-      DEMO
+    <Badge tone="info" className={className} title="사용자 입력값으로 계산한 결과">
+      입력값 계산
     </Badge>
   );
 }

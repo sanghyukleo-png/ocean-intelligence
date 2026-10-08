@@ -116,6 +116,14 @@
 | SCFI | SSEI 공개 SCFI 페이지의 `currentIndex?indexName=scfi` — **종합지수만** | 불필요 | **LIVE 동작** | 실호출 응답(픽스처) | 사용자 결정 #3. 항로별 값은 로그인 영역이라 제외. 자동 수집 금지 약관 문구 없음("All Rights Reserved"만), 국내 운임 사이트들도 같은 방식으로 게시. 하루 1회 이하·출처 표기·이의 제기 시 중단 |
 | KCCI | 한국해양진흥공사 공개 KCCI 표(gridList.do) | 불필요 | **LIVE 동작** | 실호출 HTML(픽스처) | 공공데이터포털 「한국해양진흥공사_컨테이너선운임지수(KCCI)」(15131881) 이용허락범위 제한 없음. 매주 월 14시 |
 
+### 8.1-b 키 없이 추가한 실데이터 (2026-10-08)
+
+| 지표 | 소스 | 약관 | 비고 |
+|---|---|---|---|
+| Brent·WTI(2순위), 미국 석유제품 현물 6종 | EIA 「Spot Prices for Crude Oil and Petroleum Products」 HTML 표(최근 6거래일) | 공공 도메인, 출처·발표일 표기 | 아시아 제품 현물은 Platts·Argus라 수집하지 않음. 크랙 = 제품×42 − Brent |
+| USD/CNY·JPY·SGD, EUR/USD·AUD/USD | ECB 기준환율(Frankfurter v2 `providers=ecb`) | ECB 출처 표기 재사용 | EUR·AUD는 역수로 관행 표기 |
+| 항만·해협 72시간 기상 | Open-Meteo Forecast(`cell_selection=sea`) + Marine | 비상업 무료, 일 10,000회, CC BY 4.0 | 21지점을 두 번 호출로 시간당 1회. 국내 위험 등급에는 넣지 않음(11.4) |
+
 ### 8.2 사용자 결정 (2026-10-08 확정)
 
 - **Dubai**: ⓑ IMF 월평균을 "월평균"으로 명시해 표시.

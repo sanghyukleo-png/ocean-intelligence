@@ -8,7 +8,13 @@ import { SimpleTable } from "@/components/ui/simple-table";
 import { PortRiskMap } from "@/components/weather/port-map";
 import { KMA_PORTS, MID_SEA_REGIONS } from "@/data/kmaPortZones";
 import { zoneName } from "@/data/kmaZones";
-import { readPortRisks } from "@/lib/data/read";
+import { readMet, readPortRisks } from "@/lib/data/read";
+import { Tabs } from "@/components/ui/tabs";
+import { MiniSeries } from "@/components/weather/mini-series";
+import { OVERSEAS_PORTS } from "@/data/overseasPorts";
+import type { MetPoint } from "@/lib/sources/openMeteo";
+import { DEFAULT_MET_THRESHOLDS, compass, summarizeMet } from "@/lib/weather/metSummary";
+import { formatNum } from "@/lib/utils";
 import { DEFAULT_THRESHOLDS, KMA_CRITERIA } from "@/lib/portRisk";
 import { getStore } from "@/lib/store";
 import { RISK_LEVELS, type RiskLevel } from "@/lib/tokens";
@@ -30,6 +36,20 @@ function Level({ level }: { level: RiskLevel | null }) {
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
       <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: `var(${r.token})` }} />
       {r.label}
+    </span>
+  );
+}
+
+/** 국내 항 표의 Open-Meteo 참고 칸: 풍속 곡선 + 최대 풍속·파고 */
+function MetCell({ point }: { point: MetPoint | null }) {
+  if (!point) return <span className="text-xs text-fg-faint">—</span>;
+  const s = summarizeMet(point);
+  return (
+    <span className="block">
+      <MiniSeries values={point.windKt} threshold={DEFAULT_MET_THRESHOLDS.windKt} label="풍속" unit="kt" />
+      <span className="num mt-1 block whitespace-nowrap text-xs text-fg-muted">
+        최대 {formatNum(s.maxWindKt, { decimals: 0 })}kt · {formatNum(s.maxWaveM, { decimals: 1 })}m
+      </span>
     </span>
   );
 }
@@ -62,7 +82,9 @@ const ASSUMPTIONS = (
 
 export default async function WeatherPage() {
   const store = getStore();
-  const board = await readPortRisks(store);
+  const [board, met] = await Promise.all([readPortRisks(store), readMet(store)]);
+  const metOf = (id: string, kind: MetPoint["kind"]) => (met.state === "ok" ? (met.data.points.find((p) => p.id === id && p.kind === kind) ?? null) : null);
+  const T = DEFAULT_MET_THRESHOLDS;
   const w = board.warnings;
 
   const ports = [...board.ports].sort((a, b) => Number(b.refinery) - Number(a.refinery) || (b.level ?? -1) - (a.level ?? -1));
@@ -101,25 +123,8 @@ export default async function WeatherPage() {
 
   const raw = board.warningsSnapshot?.data.raw;
 
-  return (
-    <PageShell>
-      <PageHeader
-        eyebrow="OPERATIONS · PORT WEATHER"
-        title="항만 기상 · 클로징 위험도"
-        description="기상청 특보·예비특보·해상예보로 국내 12개 주요항의 입출항 위험을 5단계로 추정합니다. 근거를 그대로 보여줍니다."
-        assumptions={ASSUMPTIONS}
-        assumptionsTitle="등급 규칙 · 근거"
-      />
-
-      <nav aria-label="지역" className="mb-6 flex gap-2">
-        <span aria-current="page" className="inline-flex h-9 items-center rounded-lg border border-line-strong bg-subtle px-4 text-sm font-medium text-fg">
-          국내
-        </span>
-        <span className="inline-flex h-9 items-center gap-2 rounded-lg border border-dashed border-line px-4 text-sm text-fg-muted">
-          해외 <Badge>준비 중</Badge>
-        </span>
-      </nav>
-
+  const domestic = (
+    <>
       <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
         {statusBadge}
         <p className="text-[0.8125rem] text-fg-muted">{statusText}</p>
@@ -148,7 +153,7 @@ export default async function WeatherPage() {
         <div className="min-w-0 space-y-4 lg:col-span-7">
           <SimpleTable
             caption="국내 주요항 클로징 위험도"
-            headers={["항만", "현재", "근거", "24h", "48h", "72h", "3~10일", "관할 기관"]}
+            headers={["항만", "현재", "바람·파고 72h(참고)", "근거", "24h", "48h", "72h", "3~10일", "관할 기관"]}
             rows={ports.map((p) => {
               const def = KMA_PORTS.find((d) => d.id === p.portId)!;
               return {
@@ -160,6 +165,7 @@ export default async function WeatherPage() {
                     {p.refinery && <Badge tone="accent" className="mt-2">정유·석화</Badge>}
                   </span>,
                   <Level key="l" level={p.level} />,
+                  <MetCell key="om" point={metOf(p.portId, "kr")} />,
                   <span key="r" className="block min-w-56 text-xs leading-relaxed text-fg-muted">
                     {p.failure?.kind === "nokey"
                       ? "API 키 미설정"
@@ -200,7 +206,8 @@ export default async function WeatherPage() {
             <p className="text-[0.8125rem] leading-relaxed text-fg">{DISCLAIMER}</p>
             <p className="mt-2 text-xs leading-relaxed text-fg-muted">
               선박 크기별 통제 기준(소형선 우선 통제 등)은 항만 운영세칙·VTS 고시로 확인된 것이 없어 반영하지 않았습니다 — 항만별 기준 확인 필요.
-              단기 해상예보·태풍 정보는 기상청 API허브 명세 확인 후 연결합니다. 태풍 경로는{" "}
+              단기 해상예보·태풍 정보는 기상청 API허브 명세 확인 후 연결합니다. &ldquo;바람·파고 72h&rdquo;는 Open-Meteo 모델 예보로 등급에 넣지 않는
+              참고값입니다(점선 = 풍속 {T.windKt}kt 기준). 태풍 경로는{" "}
               <a href="https://www.weather.go.kr/w/typhoon/report.do" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-fg">
                 기상청 태풍정보
               </a>
@@ -236,6 +243,136 @@ export default async function WeatherPage() {
           )}
         </div>
       </div>
+    </>
+  );
+
+  const overseasPorts = OVERSEAS_PORTS.map((op) => ({ op, point: metOf(op.id, "overseas") }));
+  const overseas = (
+    <>
+      <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+        {met.state === "ok" ? (
+          <DataBadge grade="live" source="Open-Meteo" sourceUrl="https://open-meteo.com/" asOf={met.asOf} fetchedAt={met.fetchedAt} cadence="모델 갱신 시간별" />
+        ) : met.state === "failed" ? (
+          <DataBadge grade="stale" source="Open-Meteo" fetchedAt={met.lastSuccessAt ?? undefined} error={met.error} />
+        ) : (
+          <DataBadge grade="pending" source="Open-Meteo" />
+        )}
+        <p className="text-[0.8125rem] text-fg-muted">
+          72시간 바람·돌풍·파고·시정 예보 · 기준 풍속 {T.windKt}kt · 파고 {T.waveM}m · 시정 1해리 미만
+        </p>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <PortRiskMap
+            points={overseasPorts.map(({ op, point }) => {
+              const s = point ? summarizeMet(point) : null;
+              const warn = s ? s.exceedHours[0] > 0 : false;
+              return { id: op.id, lon: op.coord[0], lat: op.coord[1], label: op.name, colorToken: !s ? "--fg-faint" : warn ? "--warn" : "--up", hollow: !s };
+            })}
+            center={[78, 28]}
+            zoom={1.6}
+            ariaLabel="해외 항만 위치와 24시간 내 기준 초과 여부 지도 — 같은 내용이 옆 표에 있습니다"
+            className="h-[20rem] lg:sticky lg:top-24 lg:h-[30rem]"
+          />
+          <p className="mt-3 text-xs leading-relaxed text-fg-muted">
+            주황 = 24시간 안에 풍속·파고·시정 기준을 넘는 시간이 있음 · 초록 = 없음. 항만 위치는 UN/LOCODE 대표 좌표입니다.
+          </p>
+        </div>
+        <div className="min-w-0 space-y-4 lg:col-span-7">
+          <SimpleTable
+            caption="해외 항만 72시간 기상"
+            headers={["항만", "지금", "풍속 72h", "파고 72h", "최저 시정", "기준 초과(24·48·72h)"]}
+            rows={overseasPorts.map(({ op, point }) => {
+              const s = point ? summarizeMet(point) : null;
+              return {
+                key: op.id,
+                cells: [
+                  <span key="n" className="block whitespace-nowrap">
+                    <span className="block font-medium text-fg">{op.name}</span>
+                    <span className="mt-1 block text-xs text-fg-muted">
+                      {op.country} · {op.locode}
+                    </span>
+                  </span>,
+                  s ? (
+                    <span key="now" className="num block whitespace-nowrap text-xs">
+                      <span className="block text-fg">
+                        {compass(s.now.dirDeg)} {formatNum(s.now.windKt, { decimals: 0 })}kt
+                      </span>
+                      <span className="block text-fg-muted">파고 {formatNum(s.now.waveM, { decimals: 1 })}m</span>
+                    </span>
+                  ) : (
+                    "—"
+                  ),
+                  point ? (
+                    <span key="w" className="block">
+                      <MiniSeries values={point.windKt} threshold={T.windKt} label={`${op.name} 풍속`} unit="kt" />
+                      <span className="num mt-1 block text-xs text-fg-muted">
+                        최대 {formatNum(s!.maxWindKt, { decimals: 0 })}kt · 돌풍 {formatNum(s!.maxGustKt, { decimals: 0 })}kt
+                      </span>
+                    </span>
+                  ) : (
+                    "—"
+                  ),
+                  point ? (
+                    <span key="h" className="block">
+                      <MiniSeries values={point.waveM} threshold={T.waveM} label={`${op.name} 파고`} unit="m" />
+                      <span className="num mt-1 block text-xs text-fg-muted">최대 {formatNum(s!.maxWaveM, { decimals: 1 })}m</span>
+                    </span>
+                  ) : (
+                    "—"
+                  ),
+                  <span key="v" className="num whitespace-nowrap text-xs text-fg-muted">
+                    {s?.minVisM !== null && s?.minVisM !== undefined ? `${formatNum(s.minVisM / 1852, { decimals: 1 })} nm` : "—"}
+                  </span>,
+                  <span key="x" className="num whitespace-nowrap text-xs">
+                    {s ? (
+                      <span className={s.exceedHours.some((h) => h > 0) ? "text-warn" : "text-fg-muted"}>{s.exceedHours.map((h) => `${h}h`).join(" · ")}</span>
+                    ) : (
+                      "—"
+                    )}
+                    {s?.firstExceed && (
+                      <span className="block text-fg-muted">
+                        처음 {formatKst(s.firstExceed.at)} {s.firstExceed.what.join("·")}
+                      </span>
+                    )}
+                  </span>,
+                ],
+              };
+            })}
+          />
+          <Card className="p-4">
+            <p className="text-[0.8125rem] leading-relaxed text-fg">
+              Open-Meteo 모델 예보(항만 인근 해상 격자)입니다. 도선·접안 중단 기준은 항만·터미널 규정을 확인하십시오. 태풍·사이클론은 각국 기상 당국과{" "}
+              <a href="https://www.metoc.navy.mil/jtwc/jtwc.html" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-fg">
+                JTWC
+              </a>
+              를 확인하십시오.
+            </p>
+            <p className="mt-2 text-xs text-fg-muted">Weather data by Open-Meteo.com (CC BY 4.0) · 시각은 한국시간</p>
+          </Card>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <PageShell>
+      <PageHeader
+        eyebrow="OPERATIONS · PORT WEATHER"
+        title="항만 기상 · 클로징 위험도"
+        description="기상청 특보·예비특보·해상예보로 국내 12개 주요항의 입출항 위험을 5단계로 추정합니다. 근거를 그대로 보여줍니다."
+        assumptions={ASSUMPTIONS}
+        assumptionsTitle="등급 규칙 · 근거"
+      />
+
+      <Tabs
+        aria-label="지역"
+        listClassName="mb-6"
+        items={[
+          { value: "kr", label: "국내 12개 항", content: domestic },
+          { value: "overseas", label: "해외 6개 항", content: overseas },
+        ]}
+      />
     </PageShell>
   );
 }

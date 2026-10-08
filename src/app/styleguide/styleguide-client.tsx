@@ -292,7 +292,7 @@ export function StyleguideClient() {
                 ["stale", { source: "예시 소스", fetchedAt: "2026-10-05T23:00:00Z", cadence: "일 1회", error: "HTTP 503" }],
                 ["nokey", { source: "기상청 API허브" }],
                 ["calc", {}],
-                ["demo", {}],
+                ["input", {}],
               ] as const
             ).map(([grade, p], i) => (
               <div key={i} className="space-y-2 rounded-lg border border-line bg-inset p-3">

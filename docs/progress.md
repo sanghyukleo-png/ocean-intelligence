@@ -33,6 +33,13 @@
 - 남은 일(키 발급 후): 실값 연결·Vercel 서버 호출 테스트, 날씨누리 3개 항 대조, API허브 명세(단기 해상예보·태풍), 묘박지·특보구역 폴리곤,
   KMA_APIHUB_KEY로 단기 해상예보 연결 시 `kmaPortZones.shortSeaRegIds` 사용.
 
+## 가상 데이터 제거 · 실데이터 확장 (2026-10-08)
+- 키 없이 LIVE 소스: EIA 공개 현물가 표(`eia-web` — Brent·WTI·USGC/NYH 휘발유·ULSD·항공유·프로판), ECB(USD/KRW·CNY·JPY·SGD·AUD·EUR),
+  IMF(Dubai 월평균), SSEI(SCFI), KOBC(KCCI), Open-Meteo(국내 12·해외 6개 항 + 해협 3곳, 72시간 바람·돌풍·파고·너울·시정).
+- 크랙 스프레드 = 같은 날짜 제품($/gal)×42 − Brent (`readCrack`). 시황·티커에 표시.
+- 삭제: mockMarket·mockOpportunities·mockVessels(테스트 픽스처로 이동), 조선 영업기회 모듈(scoring·salesBrief·컴포넌트), DEMO 등급, TCE 예시값.
+- 내 선박: `src/lib/myVessels.ts`(localStorage `oi-my-vessels`). 벙커 직접 입력: `src/lib/bunker-input.ts`.
+
 ## 사용자 준비 항목 (발급되는 대로 연결)
 기상청 API허브·공공데이터포털(특보·단기·중기예보) 활용 신청, EIA·수출입은행·한국은행 ECOS·aisstream.io 키,
 Supabase 계정, Vercel 환경변수. SCFI는 SSE 허락 필요(보류), KCCI는 이용조건 확인.

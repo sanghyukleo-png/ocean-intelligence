@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "석유화학 영업 실무에서 출발한 프로젝트의 배경과 설계 원칙.",
 };
 
-// 문구 전면 개편(새 포지셔닝)은 Phase 6. 여기서는 기존 문구의 의미를 유지하고 읽기 구조만 정리한다.
+// 포지셔닝: 정유·석유화학 해상 오퍼레이션 데스크(2026-10-08 가상 데이터 제거와 함께 갱신). 전면 개편은 Phase 6.
 
 const PRACTICE: string[] = [
   "ICIS/Platts 가격 시그널을 읽고 지역 간 아비트라지 구조 설계",
@@ -24,12 +24,12 @@ const PRINCIPLES: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Calculator,
     title: "결정론적 계산",
-    body: "영업기회 점수, TCE 같은 수치는 정해진 식과 입력값으로 계산합니다. 같은 입력이면 같은 결과가 나옵니다.",
+    body: "TCE·크랙 스프레드·항만 위험 등급 같은 수치는 정해진 식과 입력값으로 계산합니다. 같은 입력이면 같은 결과가 나옵니다.",
   },
   {
     icon: Tags,
     title: "데이터 등급 표기",
-    body: "모든 수치에 데이터 등급을 붙입니다. 계산 결과와 데모 데이터를 구분하고, 실시간이 아닌 값을 실시간처럼 보이게 하지 않습니다.",
+    body: "모든 수치에 데이터 등급과 출처·기준 시각을 붙입니다. 가상·예시 데이터는 쓰지 않고, 수집하지 못한 값은 지어내지 않고 상태를 그대로 보여 줍니다.",
   },
   {
     icon: MessageSquareText,
@@ -45,10 +45,10 @@ const GRADES: { grade: DataGrade; meaning: string; note?: string }[] = [
   { grade: "nokey", meaning: "API 키가 없어 수집하지 않은 항목", note: "값 없이 상태만 표시" },
   { grade: "pending", meaning: "데이터 소스 연결 전인 항목", note: "가짜 값으로 채우지 않음" },
   { grade: "calc", meaning: "사용자 입력값으로 계산한 결과" },
-  { grade: "demo", meaning: "시뮬레이션 데이터", note: "실제 시장 값이 아님" },
+  { grade: "input", meaning: "사용자가 직접 입력한 시세", note: "수집하지 않는 값(벙커가 등) · 이 브라우저에만 저장" },
 ];
 
-const STACK = ["Next.js", "TypeScript", "Tailwind CSS"];
+const STACK = ["Next.js", "TypeScript", "Tailwind CSS", "MapLibre", "Vitest"];
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -102,18 +102,17 @@ export default function AboutPage() {
               책정할지가 그 의사결정입니다.
             </p>
             <p>
-              OCEAN INTELLIGENCE는 이 사고방식이 조선 영업기획 실무에도 그대로 적용될 수 있음을 보여주려는
-              시도입니다. <span className="whitespace-nowrap">벤젠-스티렌</span> 스프레드를 읽던 방식으로{" "}
-              <span className="whitespace-nowrap">선령·발주잔량</span> 시그널을 읽고, 이를 스프레드시트가 아닌
-              등급화되고 설명 가능한 영업 파이프라인으로 바꿉니다.
+              OCEAN INTELLIGENCE는 이 사고방식을 정유·석유화학의 해상 오퍼레이션으로 옮긴 데스크입니다. 공개 소스에서
+              유가·석유제품·환율·운임·항만 기상을 모아 출처와 기준 시각을 붙이고, 용선·선적·수출 실무의 계산을 같은 화면에서
+              끝내도록 만듭니다.
             </p>
           </Section>
 
           <Section id="about-build" title="만든 방식">
             <p>
-              석유화학 트레이딩에서 해양·조선 상업 직무로의 전환을 준비하며 자기주도적으로 진행한 프로젝트입니다.
-              데이터 파이프라인은 데모 데이터를 실제 백엔드로 교체할 때 UI를 다시 쓰지 않고 연결되도록
-              설계했습니다.
+              석유화학 트레이딩 실무를 바탕으로 자기주도적으로 진행한 프로젝트입니다. 수집 소스마다 이용약관을 확인했고,
+              API 키가 없거나 수집에 실패한 지표는 값을 비우고 이유를 표시합니다. 수집 상태는 데이터 수집 상태 화면에서 볼 수
+              있습니다.
             </p>
             <ul aria-label="사용 기술" className="flex flex-wrap gap-2 pt-1">
               {STACK.map((s) => (
@@ -133,7 +132,7 @@ export default function AboutPage() {
                 설계 원칙
               </h2>
               <p className="mt-2 text-balance text-sm leading-relaxed text-fg-muted">
-                계산·표기·설명을 의도적으로 분리했습니다. 실제 영업기획 도구가 갖춰야 할 원칙입니다.
+                계산·표기·설명을 의도적으로 분리했습니다. 실무 도구가 갖춰야 할 원칙입니다.
               </p>
 
               <ol className="mt-6 space-y-6">

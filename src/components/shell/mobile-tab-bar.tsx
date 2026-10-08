@@ -7,7 +7,7 @@ import { ChartLine, Ellipsis, FileScan, House, Layers, type LucideIcon } from "l
 import { Sheet } from "@/components/ui/sheet";
 import { NavTile } from "@/components/shell/nav-tile";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
-import { ABOUT_ITEM, MARKET_ITEM, OPS_TOOLS, SHIPBUILDING_ITEMS, VESSEL_ITEMS, VOYAGE_ITEM, isActive } from "@/lib/nav";
+import { ABOUT_ITEM, MARKET_ITEM, OPS_TOOLS, VESSEL_ITEMS, VOYAGE_ITEM, isActive } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 type SheetKind = "ops" | "more" | null;
@@ -60,7 +60,7 @@ export function MobileTabBar() {
   }
 
   const opsActive = isActive(pathname, OPS_TOOLS.map((t) => t.href));
-  const moreItems = [VOYAGE_ITEM, VESSEL_ITEMS[1], ...SHIPBUILDING_ITEMS, ABOUT_ITEM];
+  const moreItems = [VOYAGE_ITEM, VESSEL_ITEMS[1], ABOUT_ITEM];
   const moreActive = isActive(pathname, moreItems.map((t) => t.href));
 
   return (

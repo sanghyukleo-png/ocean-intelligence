@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCompareRows, cargoCapacityUnit, generateComparisonInsight } from "@/lib/vesselCompare";
-import { mockVessels } from "@/data/mockVessels";
+import { mockVessels } from "./fixtures/vessels";
 
 const byId = (id: string) => {
   const v = mockVessels.find((x) => x.id === id);

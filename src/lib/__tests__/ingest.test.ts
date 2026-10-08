@@ -140,9 +140,10 @@ describe("수집 실행기 · 실패 시 마지막 성공값 (11.7)", () => {
     const { koreaEximSource } = await import("@/lib/sources/koreaexim");
     const r = await runSource(koreaEximSource, { store, env: {} });
     expect(r).toEqual({ sourceId: "koreaexim", status: "nokey", missing: ["KOREAEXIM_API_KEY"] });
-    expect((await readMetric(store, "brent", {})).grade).toBe("nokey");
+    // Brent: API 키는 없지만 키 불필요 2순위(EIA 공개 표)가 있어 "첫 수집 대기"
+    expect((await readMetric(store, "brent", {})).grade).toBe("pending");
     expect((await readMetric(store, "usdkrw", {})).grade).toBe("pending"); // 키 불필요 소스가 첫 수집 대기
-    expect((await readMetric(store, "dubai", {})).grade).toBe("pending"); // 소스 미확보
+    expect((await readMetric(store, "dubai", {})).grade).toBe("pending"); // IMF 첫 수집 대기
   });
 
   it("실패 후에는 재시도 간격, 성공 후에는 최소 간격", () => {

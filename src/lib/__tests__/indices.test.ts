@@ -9,6 +9,7 @@ import { parseBunkerInput } from "@/lib/bunker-input";
 import { KMA_PORTS } from "@/data/kmaPortZones";
 import { kobcKcciSource, parseKobcKcci, parseSseScfi } from "@/lib/sources/freightIndices";
 import { imfDubaiSource, parseImfPcps } from "@/lib/sources/imf";
+import { parseEiaSpotPage } from "@/lib/sources/eia";
 import type { Observation } from "@/lib/sources/types";
 import { createMemoryStore } from "@/lib/store/memory";
 
@@ -107,5 +108,20 @@ describe("단기 해상예보 구역 코드", () => {
       expect(p.shortSeaRegIds.length, p.name).toBeGreaterThan(0);
       for (const c of p.shortSeaRegIds) expect(c, p.name).toMatch(/^(12|22)[A-C]\d{5}$/);
     }
+  });
+});
+
+describe("Brent·WTI — EIA 공개 현물가 표 (실호출 HTML)", () => {
+  const html = fs.readFileSync(path.join(__dirname, "fixtures/eia-spot-prices.htm"), "utf8");
+  it("최근 6거래일 두 시리즈", () => {
+    const obs = parseEiaSpotPage(html, AT);
+    const brent = obs.filter((o) => o.metric === "brent");
+    const wti = obs.filter((o) => o.metric === "wti");
+    expect(brent.map((o) => o.asOf)).toEqual(["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06"]);
+    expect(brent.at(-1)!.value).toBe(125.44);
+    expect(wti.at(-1)!.value).toBe(96.24);
+  });
+  it("표가 바뀌면 형식 오류", () => {
+    expect(() => parseEiaSpotPage("<html></html>", AT)).toThrowError(/Series5/);
   });
 });

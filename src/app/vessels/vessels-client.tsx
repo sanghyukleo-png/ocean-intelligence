@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  BookmarkPlus,
   Check,
   FileScan,
   Gauge,
@@ -12,6 +13,8 @@ import {
   RotateCcw,
   ScanText,
   ShieldCheck,
+  Ship,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
 import { PageShell } from "@/components/shell/page-shell";
@@ -26,7 +29,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Reveal } from "@/components/motion/reveal";
 import { VesselIcon } from "@/components/vessel-icon";
-import { mockVessels, sampleVesselSpecText } from "@/data/mockVessels";
+import { emptyVessels, readMyVessels, removeMyVessel, saveMyVessel, subscribeMyVessels, vesselFromExtraction } from "@/lib/myVessels";
 import { extractVesselFromText, type ExtractedField, type VesselExtractionResult } from "@/lib/vesselExtraction";
 import { cn, formatNumber } from "@/lib/utils";
 import type { Vessel } from "@/types";
@@ -99,9 +102,50 @@ const DB_COLUMNS: Column<Vessel>[] = [
     sortValue: (v) => v.builtYear,
     cell: (v) => v.builtYear ?? "—",
   },
+  { key: "imo", header: "IMO", cell: (v) => <span className="num text-fg-muted">{v.imo ?? "—"}</span>, className: "whitespace-nowrap" },
+  { key: "loa", header: "LOA (m)", numeric: true, sortValue: (v) => v.loa, cell: (v) => formatNumber(v.loa) },
+  { key: "draft", header: "흘수 (m)", numeric: true, sortValue: (v) => v.draft, cell: (v) => formatNumber(v.draft) },
   { key: "class", header: "선급", cell: (v) => <span className="text-fg-muted">{v.class ?? "—"}</span>, className: "whitespace-nowrap" },
   { key: "flag", header: "선적", cell: (v) => <span className="text-fg-muted">{v.flag ?? "—"}</span>, className: "whitespace-nowrap" },
+  {
+    key: "remove",
+    header: <span className="sr-only">삭제</span>,
+    cell: (v) => (
+      <Button variant="ghost" size="sm" onClick={() => removeMyVessel(v.id)} aria-label={`${v.vesselName} 삭제`}>
+        <Trash2 size={14} strokeWidth={1.75} aria-hidden="true" />
+      </Button>
+    ),
+  },
 ];
+
+/** 내 선박 — 이 브라우저에 저장한 추출 결과만(가상 선박 없음) */
+function MyVessels() {
+  const list = useSyncExternalStore(subscribeMyVessels, readMyVessels, emptyVessels);
+  return (
+    <Reveal as="section" className="mt-16 lg:mt-24">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="type-h2 text-fg">내 선박</h2>
+            <DataBadge grade="calc" />
+          </div>
+          <p className="mt-2 text-[0.8125rem] text-fg-muted">추출 결과에서 저장한 선박 · 이 브라우저에만 저장(최대 20척)</p>
+        </div>
+        {list.length >= 2 && (
+          <Link href="/compare" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            선박 비교
+            <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+      {list.length ? (
+        <DataTable columns={DB_COLUMNS} rows={list} rowKey={(v) => v.id} caption={`내 선박 ${list.length}척`} />
+      ) : (
+        <EmptyState icon={Ship} title="저장한 선박이 없습니다" description="Q88·제원 텍스트를 추출한 뒤 ‘내 선박에 저장’을 누르면 여기에 쌓이고 선박 비교에 쓸 수 있습니다." />
+      )}
+    </Reveal>
+  );
+}
 
 function ExtractionStepper({ status, stepIndex }: { status: Status; stepIndex: number }) {
   return (
@@ -181,6 +225,19 @@ function ResultsSkeleton() {
   );
 }
 
+function SaveVesselButton({ result }: { result: VesselExtractionResult }) {
+  const list = useSyncExternalStore(subscribeMyVessels, readMyVessels, emptyVessels);
+  const vessel = vesselFromExtraction(result.vessel, result.overallConfidence);
+  const saved = vessel ? list.some((v) => v.id === vessel.id && v.dwt === vessel.dwt && v.loa === vessel.loa) : false;
+  if (!vessel) return <Badge tone="warn">선명 미검출 · 저장 불가</Badge>;
+  return (
+    <Button variant="secondary" size="sm" aria-disabled={saved} onClick={() => !saved && saveMyVessel(vessel)}>
+      {saved ? <Check size={14} strokeWidth={2} aria-hidden="true" /> : <BookmarkPlus size={14} strokeWidth={1.75} aria-hidden="true" />}
+      {saved ? "저장됨" : "내 선박에 저장"}
+    </Button>
+  );
+}
+
 function ExtractionResults({
   result,
   stale,
@@ -204,6 +261,7 @@ function ExtractionResults({
           actions={
             <>
               {stale && <Badge tone="warn">원문 변경됨</Badge>}
+              {!stale && <SaveVesselButton result={result} />}
               <DataBadge grade="calc" />
             </>
           }
@@ -303,7 +361,7 @@ export default function VesselsClient() {
   // 결과를 만든 원문 — 이후 편집으로 결과가 낡았는지 판단한다
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const resultsRef = useRef<HTMLElement>(null);
-  // 진행 중에 샘플 불러오기·초기화를 누르면 이전 실행 결과를 버린다
+  // 진행 중에 초기화를 누르면 이전 실행 결과를 버린다
   const runRef = useRef(0);
 
   const trimmed = rawText.trim();
@@ -328,14 +386,6 @@ export default function VesselsClient() {
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }));
     }
-  }
-
-  function handleLoadSample() {
-    runRef.current++;
-    setRawText(sampleVesselSpecText);
-    setResult(null);
-    setExtractedText(null);
-    setStatus("idle");
   }
 
   function handleReset() {
@@ -374,11 +424,11 @@ export default function VesselsClient() {
               <strong>처리 위치</strong> — 추출은 브라우저 안에서 실행되며 텍스트를 서버로 보내지 않습니다.
             </p>
             <p>
-              <strong>한계</strong> — 샘플과 같은 &lsquo;라벨: 값&rsquo; 줄만 인식합니다. 항목 번호가 붙은 Q88 원본, 한 줄에 여러
+              <strong>한계</strong> — &lsquo;Deadweight (DWT): 값&rsquo; 같은 &lsquo;라벨: 값&rsquo; 줄만 인식합니다. 항목 번호가 붙은 Q88 원본, 한 줄에 여러
               값이 있는 항목, 단위 환산, PDF 업로드는 Q88 전용 파서(준비 중)에서 지원합니다.
             </p>
             <p>
-              <strong>선박 데이터베이스</strong> — 시연용 가상 선박 10척(DEMO)입니다. 실제 선박·선주와 관계없습니다.
+              <strong>내 선박</strong> — 추출 결과에서 저장한 선박만 이 브라우저에 남습니다. 가상·예시 선박은 두지 않습니다.
             </p>
           </>
         }
@@ -402,14 +452,11 @@ export default function VesselsClient() {
                     <span className="hidden md:inline"> · ⌘/Ctrl + Enter로 추출</span>
                   </>
                 ) : (
-                  "Q88·제원표의 '라벨: 값' 줄을 붙여넣거나 샘플을 불러오세요."
+                  "Q88·제원표의 '라벨: 값' 줄을 붙여넣으세요."
                 )
               }
               aside={
                 <span className="flex shrink-0 items-center gap-1">
-                  <Button variant="secondary" size="sm" onClick={handleLoadSample}>
-                    샘플 불러오기
-                  </Button>
                   <Button variant="ghost" size="sm" onClick={handleReset} disabled={!rawText && !result}>
                     <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
                     초기화
@@ -428,7 +475,7 @@ export default function VesselsClient() {
                     void handleExtract();
                   }
                 }}
-                placeholder={"Vessel Name: STAR ODYSSEY\nIMO Number: 9812345\nDeadweight (DWT): 50,000 MT\n…"}
+                placeholder={"Vessel Name: …\nIMO Number: …\nDeadweight (DWT): …\nLength Overall (LOA): …"}
                 rows={14}
                 spellCheck={false}
               />
@@ -463,36 +510,14 @@ export default function VesselsClient() {
             <EmptyState
               icon={FileScan}
               title="추출 결과가 여기에 표시됩니다"
-              description="샘플을 불러오거나 제원 텍스트를 붙여넣은 뒤 ‘추출 시작’을 누르세요. 필드마다 값·신뢰도·원문 줄이 나옵니다."
+              description="제원 텍스트를 붙여넣은 뒤 ‘추출 시작’을 누르세요. 필드마다 값·신뢰도·원문 줄이 나오고, 결과는 ‘내 선박’에 저장해 비교할 수 있습니다."
               className="h-full min-h-64"
             />
           )}
         </section>
       </div>
 
-      <Reveal as="section" className="mt-16 lg:mt-24">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="type-h2 text-fg">선박 데이터베이스</h2>
-              <DataBadge grade="demo" />
-            </div>
-            <p className="mt-2 text-[0.8125rem] text-fg-muted">
-              데모 선박 데이터 · 가상 선박 {mockVessels.length}척 · 조회 전용
-            </p>
-          </div>
-          <Link href="/compare" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-            선박 비교
-            <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
-          </Link>
-        </div>
-        <DataTable
-          columns={DB_COLUMNS}
-          rows={mockVessels}
-          rowKey={(v) => v.id}
-          caption={`데모 선박 데이터베이스 ${mockVessels.length}척`}
-        />
-      </Reveal>
+      <MyVessels />
     </PageShell>
   );
 }

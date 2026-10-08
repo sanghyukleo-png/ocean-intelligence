@@ -1,8 +1,9 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, useSyncExternalStore } from "react";
 import { ChartLine, ChevronRight, RotateCcw, TriangleAlert } from "lucide-react";
-import { calculateTce, DEFAULT_TCE_INPUTS, type TceInputs, type TceResult } from "@/lib/tce";
+import { calculateTce, type TceInputs, type TceResult } from "@/lib/tce";
+import { BUNKER_FIELDS, EMPTY_BUNKER, readBunkerInput, subscribeBunkerInput } from "@/lib/bunker-input";
 import { clamp } from "@/lib/input-parse";
 import { cn, formatNum, type NumFormat } from "@/lib/utils";
 import { CalculatorLayout } from "@/components/layout/calculator-layout";
@@ -37,7 +38,7 @@ interface InputSpec {
   range?: { min: number; max: number; step: number; format: NumFormat };
 }
 
-/** 입력 정의: 단위·증감 단위·허용 범위. 기본값은 모두 예시(src/lib/tce.ts DEFAULT_TCE_INPUTS). */
+/** 입력 정의: 단위·증감 단위·허용 범위. 예시 기본값은 두지 않는다(2026-10-08 — 임의 숫자 표시 금지). */
 const SPEC: Record<Key, InputSpec> = {
   cargoQuantity: { label: "화물량", unit: "MT", step: 1000, min: 0, digits: 2 },
   distanceNm: {
@@ -65,7 +66,7 @@ const SPEC: Record<Key, InputSpec> = {
     min: 0,
     max: 5000,
     digits: 2,
-    tip: "예시값입니다. 실제 견적에는 해당 항구의 최신 벙커 가격을 넣으세요.",
+    tip: "해당 항구의 최신 벙커 견적을 넣으세요. 시황의 ‘벙커가 직접 입력’ 값을 불러올 수 있습니다.",
     range: { min: 300, max: 1000, step: 5, format: { prefix: "$" } },
   },
   fuelConsumptionPerDay: {
@@ -82,7 +83,7 @@ const SPEC: Record<Key, InputSpec> = {
     step: 1000,
     min: 0,
     digits: 2,
-    tip: "예시값입니다. 실제 항비는 대리점 PDA 견적으로 확인하세요.",
+    tip: "대리점 PDA 견적 기준으로 넣으세요.",
   },
   canalCost: { label: "운하 통과비", unit: "USD", step: 1000, min: 0, digits: 2, tip: "수에즈·파나마 등. 통과하지 않으면 0." },
   commissionPct: { label: "커미션", unit: "%", step: 0.25, min: 0, max: 100, digits: 2, tip: "운임 수익에 대한 수수료 합계 비율입니다." },
@@ -113,7 +114,19 @@ const GROUPS: { title: string; keys: Key[]; compact: boolean; dailyFuel?: boolea
   { title: "운임", keys: ["freightRate"], compact: false },
 ];
 
-const DEFAULT_DRAFT: Draft = { ...DEFAULT_TCE_INPUTS };
+// 빈 입력으로 시작한다. 운하·대기는 "없음"이 기본이라 0
+const DEFAULT_DRAFT: Draft = {
+  freightRate: null,
+  cargoQuantity: null,
+  distanceNm: null,
+  speedKnots: null,
+  bunkerPricePerTon: null,
+  fuelConsumptionPerDay: null,
+  portCost: null,
+  canalCost: 0,
+  commissionPct: null,
+  waitingDays: 0,
+};
 const KEYS = Object.keys(DEFAULT_DRAFT) as Key[];
 
 function fieldError(key: Key, value: number | null): string | undefined {
@@ -233,7 +246,8 @@ function InputField({ k, value, onChange }: { k: Key; value: number | null; onCh
     />
   );
   return (
-    <Field label={s.label} tip={s.tip} error={fieldError(k, value)} className={s.range ? "col-span-full" : undefined}>
+    // 빈 칸은 오류로 칠하지 않는다(처음엔 모두 비어 있음) — 계산 여부는 결과 쪽 안내가 알려 준다
+    <Field label={s.label} tip={s.tip} error={value === null ? undefined : fieldError(k, value)} className={s.range ? "col-span-full" : undefined}>
       {s.range ? (
         <div className="flex items-start gap-4">
           {input}
@@ -247,6 +261,28 @@ function InputField({ k, value, onChange }: { k: Key; value: number | null; onCh
 }
 
 /** 읽기 전용 파생값: 일일 소모 × 벙커 가격 — 입력 칸으로 오해하지 않도록 상자 없이 값만 둔다 */
+/** 시황 화면에서 직접 입력한 벙커가(이 브라우저 저장)를 한 번에 넣는 버튼 — 저장값이 없으면 안내만 */
+function BunkerPresets({ onPick }: { onPick: (v: number) => void }) {
+  const bunker = useSyncExternalStore(subscribeBunkerInput, readBunkerInput, () => EMPTY_BUNKER);
+  const saved = BUNKER_FIELDS.filter((f) => bunker.prices[f.key] !== undefined);
+  return (
+    <div className="col-span-full flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+      {saved.length ? (
+        <>
+          <span>직접 입력한 벙커가{bunker.asOf ? ` (${bunker.asOf})` : ""}:</span>
+          {saved.map((f) => (
+            <Button key={f.key} size="sm" variant="ghost" onClick={() => onPick(bunker.prices[f.key]!)}>
+              {f.fuel} {f.port} ${formatNum(bunker.prices[f.key]!, { decimals: 0 })}
+            </Button>
+          ))}
+        </>
+      ) : (
+        <span>시황 화면 &lsquo;벙커가 직접 입력&rsquo;에 견적을 넣어 두면 여기서 불러올 수 있습니다.</span>
+      )}
+    </div>
+  );
+}
+
 function DailyFuelCost({ value }: { value: number | null }) {
   const id = useId();
   return (
@@ -291,7 +327,9 @@ export function TceCalculator() {
       : null;
 
   const problem = !inputs
-    ? "빈 칸이나 허용 범위를 벗어난 입력이 있어 계산하지 않았습니다. 입력값 아래 안내를 확인하세요."
+    ? KEYS.some((k) => draft[k] === null)
+      ? "모든 칸에 값을 넣으면 TCE를 계산합니다."
+      : "허용 범위를 벗어난 입력이 있어 계산하지 않았습니다. 입력값 아래 안내를 확인하세요."
     : !r
       ? "총 일수가 0이라 TCE를 계산할 수 없습니다. 운항거리나 대기일수를 입력하세요."
       : null;
@@ -307,12 +345,13 @@ export function TceCalculator() {
               <InputField key={k} k={k} value={draft[k]} onChange={set(k)} />
             ))}
             {g.dailyFuel && <DailyFuelCost value={dailyFuel} />}
+            {g.dailyFuel && <BunkerPresets onPick={set("bunkerPricePerTon")} />}
           </div>
         </Card>
       ))}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-1">
-        <p className="min-w-0 text-xs leading-relaxed text-fg-muted">기본값은 계산 예시이며 실제 시세나 C/P 조건이 아닙니다.</p>
+        <p className="min-w-0 text-xs leading-relaxed text-fg-muted">입력값은 이 화면에만 있고 서버로 보내지 않습니다.</p>
         {/* disabled 대신 aria-disabled: 누른 직후 비활성이 되어도 키보드 포커스가 본문으로 튀지 않는다 */}
         <Button
           size="sm"
@@ -321,7 +360,7 @@ export function TceCalculator() {
           className="h-11 aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:border-line-strong aria-disabled:hover:bg-raised aria-disabled:active:translate-y-0 md:h-8"
         >
           <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
-          예시값으로 되돌리기
+          입력 비우기
         </Button>
       </div>
     </>

@@ -1,9 +1,9 @@
 import {
+  Activity,
   CalendarClock,
   ChartLine,
   Gauge,
   Columns3,
-  Factory,
   FileScan,
   FlaskConical,
   Hourglass,
@@ -144,23 +144,21 @@ export const MARKET_ITEM: NavItem = {
   href: "/market",
   label: "시황",
   en: "Market",
-  description: "유가·환율·운임 지표와 뉴스",
+  description: "원유·석유제품·크랙·환율·운임 수집값",
   icon: ChartLine,
   status: "ready",
-  keywords: ["market", "시황", "유가", "환율", "brent", "scfi"],
+  keywords: ["market", "시황", "유가", "환율", "brent", "wti", "dubai", "crack", "크랙", "경유", "scfi", "kcci"],
 };
 
-export const SHIPBUILDING_ITEMS: NavItem[] = [
-  {
-    href: "/opportunities",
-    label: "조선 영업기회",
-    en: "Shipbuilding Opportunities",
-    description: "선대·발주잔량 기반 고객사 점수",
-    icon: Factory,
-    status: "ready",
-    keywords: ["shipbuilding", "opportunity", "조선", "영업기회", "스코어"],
-  },
-];
+export const STATUS_ITEM: NavItem = {
+  href: "/status",
+  label: "데이터 수집 상태",
+  en: "Data Status",
+  description: "소스별 마지막 성공·실패·API 키 설정",
+  icon: Activity,
+  status: "ready",
+  keywords: ["status", "상태", "수집", "api", "source"],
+};
 
 export const ABOUT_ITEM: NavItem = {
   href: "/about",
@@ -174,7 +172,7 @@ export const ABOUT_ITEM: NavItem = {
 
 /** 데스크톱 상단 내비 순서 (지시서 4.2) */
 export type TopNavEntry =
-  | { kind: "menu"; id: "ops" | "shipbuilding"; label: string; items: NavItem[] }
+  | { kind: "menu"; id: "ops"; label: string; items: NavItem[] }
   | { kind: "link"; item: NavItem; label: string; match: string[] };
 
 export const TOP_NAV: TopNavEntry[] = [
@@ -182,7 +180,7 @@ export const TOP_NAV: TopNavEntry[] = [
   { kind: "link", item: VESSEL_ITEMS[0], label: "선박", match: ["/vessels", "/compare"] },
   { kind: "link", item: VOYAGE_ITEM, label: "항차", match: ["/analytics"] },
   { kind: "link", item: MARKET_ITEM, label: "시황", match: ["/market"] },
-  { kind: "menu", id: "shipbuilding", label: "조선영업", items: SHIPBUILDING_ITEMS },
+  { kind: "link", item: OPS_TOOLS.find((t) => t.href === "/ops/weather")!, label: "항만 기상", match: ["/ops/weather"] },
 ];
 
 /** 홈 도구 스트립 (지시서 4.1-5) */
@@ -200,7 +198,7 @@ export const ALL_NAV_ITEMS: NavItem[] = [
   ...VESSEL_ITEMS,
   VOYAGE_ITEM,
   MARKET_ITEM,
-  ...SHIPBUILDING_ITEMS,
+  STATUS_ITEM,
   ABOUT_ITEM,
 ];
 

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { PageShell } from "@/components/shell/page-shell";
 import { TceCalculator } from "@/components/analytics/tce-calculator";
 
-const DESCRIPTION = "운임·화물량·벙커·항비로 항차 손익과 하루 TCE를 계산합니다. 기본 입력값은 예시입니다.";
+const DESCRIPTION = "운임·화물량·벙커·항비로 항차 손익과 하루 TCE를 계산합니다. 모든 값은 직접 입력합니다.";
 
 export const metadata: Metadata = {
   title: "항차 견적 · TCE",
@@ -82,8 +82,8 @@ function Assumptions() {
         <h3 className="text-sm font-semibold text-fg">입력값 · 그래프 · 해설</h3>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong>기본 입력값은 모두 예시값</strong>입니다. 시장 시세나 특정 C/P 조건이 아닙니다. 거리·항비·벙커 가격은
-            실제 견적 전에 직접 확인하세요.
+            <strong>예시 기본값은 없습니다.</strong> 운임·거리·항비·벙커 가격은 실제 견적·C/P 기준으로 넣으세요. 벙커 가격은 시황 화면에서
+            직접 입력한 값을 불러올 수 있습니다.
           </li>
           <li>
             속력·벙커 가격·운임 옆 슬라이더는 같은 값을 빠르게 바꾸는 보조 입력입니다. 슬라이더 범위를 벗어난 값은 숫자 칸에

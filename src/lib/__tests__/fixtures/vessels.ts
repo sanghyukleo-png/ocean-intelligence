@@ -1,4 +1,5 @@
-import { Vessel } from "@/types";
+// 테스트 전용 가상 선박·제원 텍스트 — 화면에는 쓰지 않는다(2026-10-08: 가상 데이터 표시 금지).
+import type { Vessel } from "@/types";
 
 // SIMULATED / DEMO DATA. Fictional vessels for portfolio demonstration only.
 

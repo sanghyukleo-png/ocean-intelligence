@@ -23,6 +23,7 @@ export function LiveMetricTile({ def, reading }: { def: MetricDef; reading: Metr
         hint={reading.changePct !== null ? (reading.provenance.asOfPrecision === "month" ? "전월 대비" : "직전 발표 대비") : undefined}
         badge={<DataBadge grade={reading.grade} {...reading.provenance} />}
       />
+      {def.note && <p className="mt-2 text-xs text-fg-muted">{def.note}</p>}
       {series.length >= 3 && (
         <Sparkline className="mt-4" data={series} label={def.label} format={{ decimals: def.decimals }} unit={def.unit} />
       )}

@@ -64,15 +64,3 @@ export function calculateTce(inputs: TceInputs): TceResult {
   };
 }
 
-export const DEFAULT_TCE_INPUTS: TceInputs = {
-  freightRate: 28,
-  cargoQuantity: 50000,
-  distanceNm: 4200,
-  speedKnots: 13.5,
-  bunkerPricePerTon: 620,
-  fuelConsumptionPerDay: 32,
-  portCost: 45000,
-  canalCost: 0,
-  commissionPct: 3.75,
-  waitingDays: 2,
-};

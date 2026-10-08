@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { ABOUT_ITEM, MARKET_ITEM, OPS_TOOLS, SHIPBUILDING_ITEMS, VESSEL_ITEMS, VOYAGE_ITEM, type NavItem } from "@/lib/nav";
+import { ABOUT_ITEM, MARKET_ITEM, OPS_TOOLS, STATUS_ITEM, VESSEL_ITEMS, VOYAGE_ITEM, type NavItem } from "@/lib/nav";
 
 const COLUMNS: { title: string; items: NavItem[] }[] = [
   { title: "오퍼레이션", items: OPS_TOOLS },
   { title: "선박 · 항차", items: [...VESSEL_ITEMS, VOYAGE_ITEM] },
-  { title: "시장", items: [MARKET_ITEM, ...SHIPBUILDING_ITEMS] },
+  { title: "시장 · 데이터", items: [MARKET_ITEM, STATUS_ITEM] },
 ];
 
 export function SiteFooter() {
@@ -18,7 +18,7 @@ export function SiteFooter() {
             정유·석유화학 선적·용선·수출입 실무를 위한 해상 오퍼레이션 데스크.
           </p>
           <ul className="space-y-2 text-xs leading-relaxed text-fg-muted">
-            <li>모든 수치에 LIVE · 입력값 계산 · DEMO 등급을 표기합니다.</li>
+            <li>모든 수치에 LIVE · 입력값 계산 · 직접 입력 등급과 출처·기준 시각을 표기합니다.</li>
             <li>계산은 결정론적 코드가 하고, AI는 설명과 초안만 씁니다.</li>
             <li>기본값은 예시입니다. 실제 용선계약(C/P)·터미널 규정을 확인하십시오.</li>
           </ul>

@@ -1,5 +1,5 @@
 import type { DataGrade, DataProvenance } from "@/components/ui/badge";
-import { METRICS, readMetric, readPortRisks } from "@/lib/data/read";
+import { CRACKS, METRICS, readCrack, readMetric, readPortRisks } from "@/lib/data/read";
 import type { DataStore } from "@/lib/store";
 import type { NumFormat } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ export interface TickerItem {
 }
 
 // 지시서 11.5 순서에서 벙커유는 수집하지 않기로 해 빠지고(2026-10-08), 국내 공공 운임지수 KCCI를 SCFI 옆에 둔다(11.1)
-const ORDER = ["brent", "dubai", "usdkrw", "scfi", "kcci"] as const;
+const ORDER = ["brent", "wti", "dubai", "usdkrw", "scfi", "kcci"] as const;
 
 export async function getTickerItems(store: DataStore, env: Record<string, string | undefined> = process.env): Promise<TickerItem[]> {
   const readings = await Promise.all(ORDER.map((id) => readMetric(store, id, env, 2)));
@@ -37,6 +37,20 @@ export async function getTickerItems(store: DataStore, env: Record<string, strin
       provenance: r.provenance,
       positiveIsGood: null,
     };
+  });
+
+  // 경유 크랙(USGC ULSD×42 − Brent) — 수집값으로 계산
+  const crack = await readCrack(store, CRACKS[0], env);
+  items.splice(3, 0, {
+    key: crack.id,
+    label: "경유 크랙",
+    unit: "$/bbl",
+    value: crack.value,
+    changePct: null,
+    format: { decimals: 2 },
+    grade: crack.grade,
+    provenance: crack.provenance,
+    positiveIsGood: null,
   });
 
   // 국내항 경보 수 = 위험도 "주의" 이상 항만 수
